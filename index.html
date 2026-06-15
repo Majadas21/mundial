@@ -450,10 +450,14 @@ const FLAGS = {
 function getFlag(name) { return FLAGS[name] || '🏳️'; }
 
 // ── Demo data ─────────────────────────────────────────────────────────────
-const TODAY = new Date().toISOString().slice(0,10);
+function todayLocal() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+const TODAY = todayLocal();
 function demoDate(offset) {
   const d = new Date(); d.setDate(d.getDate() + offset);
-  return d.toISOString().slice(0,10);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 const DEMO_DAYS = {
   [TODAY]: { date: TODAY, matches: [
@@ -562,10 +566,10 @@ function subscribeVotes() {
 function isStarted(match) {
   const now = new Date();
   if (match.datetime) {
-    // "2026-06-16T00:00" — fecha y hora exactas en Madrid
-    return now >= new Date(match.datetime);
+    // Datetimes en matches.json son hora de Madrid (CEST = UTC+2)
+    return now >= new Date(match.datetime + ':00+02:00');
   }
-  // Fallback para partidos de demo (solo tienen time)
+  // Fallback para partidos demo (solo tienen time)
   const [h,m] = match.time.split(':').map(Number);
   return now >= new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
 }
@@ -716,14 +720,20 @@ window.submitVote = async function(matchId) {
 
   const playerKey = safeKey(currentPlayer);
   const voteRef = ref(db, `votes/${matchId}/${playerKey}`);
-  const existing = await get(voteRef);
-  if (existing.exists()) { showToast('Ya has votado este partido'); return; }
 
-  await set(voteRef, { home: h, away: a, ts: Date.now(), name: currentPlayer });
-
-  // Animación de celebración al guardar
-  showToast('¡Pronóstico guardado! 🎯');
-  animateSave();
+  try {
+    await set(voteRef, { home: h, away: a, ts: Date.now(), name: currentPlayer });
+    showToast('¡Pronóstico guardado! 🎯');
+    animateSave();
+  } catch(e) {
+    const msg = e?.message || '';
+    if (msg.includes('PERMISSION_DENIED')) {
+      showToast('Ya has votado este partido');
+    } else {
+      console.error('Error al guardar pronóstico:', e);
+      showToast('Error al guardar. Comprueba tu conexión.', true);
+    }
+  }
 };
 
 // ── Ranking ───────────────────────────────────────────────────────────────
@@ -870,9 +880,10 @@ function animateSave() {
   }
 }
 
-function showToast(msg) {
+function showToast(msg, isError = false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
+  t.style.background = isError ? '#dc2626' : '';
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
