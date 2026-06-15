@@ -522,46 +522,39 @@ window.changeName = function() {
 
 // ── Load matches per day ──────────────────────────────────────────────────
 async function loadAllDays() {
-  // 1. Carga inmediata con datos de demo para que nunca se quede pillado
-  allDays = { ...DEMO_DAYS };
-  if (!allDays[TODAY]) allDays[TODAY] = { date: TODAY, matches: [] };
-  renderDaySelector();
-  renderAll();
-
-  // 2. Intenta cargar matches.json (generado por GitHub Action)
-  // Formato: { "2026-06-15": [{...}, ...], "2026-06-16": [{...}, ...] }
+  // Esperar matches.json antes de renderizar — sin demos mezclados
+  let gotReal = false;
   try {
     const res = await fetch('./matches.json?t=' + Date.now());
     if (res.ok) {
       const data = await res.json();
-      // Cada clave es una fecha, el valor es un array de partidos
-      let updated = false;
+      const realDays = {};
       for (const [date, matches] of Object.entries(data)) {
         if (Array.isArray(matches) && matches.length) {
-          allDays[date] = { date, matches };
-          updated = true;
+          realDays[date] = { date, matches };
         }
       }
-      if (updated) {
-        renderDaySelector();
-        renderAll();
+      if (Object.keys(realDays).length) {
+        allDays = realDays;
+        gotReal = true;
       }
     }
   } catch {}
 
-  // 3. Intenta cargar días históricos de Firebase (con timeout de 5s)
-  try {
-    const fbSnap = await Promise.race([
-      get(ref(db, 'days')),
-      new Promise((_, reject) => setTimeout(() => reject('timeout'), 5000))
-    ]);
-    const fbDays = fbSnap.val() || {};
-    if (Object.keys(fbDays).length) {
-      allDays = { ...allDays, ...fbDays };
-      renderDaySelector();
-      renderAll();
-    }
-  } catch {}
+  // Solo usar demos si el fetch falla completamente
+  if (!gotReal) allDays = { ...DEMO_DAYS };
+
+  // Seleccionar hoy si existe; si no, el día más reciente disponible
+  const sorted = Object.keys(allDays).sort();
+  if (allDays[TODAY]) {
+    selectedDate = TODAY;
+  } else {
+    const past = sorted.filter(d => d <= TODAY);
+    selectedDate = past.length ? past[past.length - 1] : sorted[0];
+  }
+
+  renderDaySelector();
+  renderAll();
 }
 
 // ── Subscribe to votes (realtime) ─────────────────────────────────────────
@@ -609,12 +602,14 @@ function renderDaySelector() {
 
   const DAYS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   scroll.innerHTML = days.map(d => {
-    const dt = new Date(d + 'T12:00:00');
+    // Parsear manualmente "YYYY-MM-DD" para evitar NaN en Safari/Firefox
+    const [y, mo, day] = d.split('-').map(Number);
+    const dt = new Date(y, mo - 1, day, 12, 0, 0);
     const isToday = d === TODAY;
     const isActive = d === selectedDate;
     return `<div class="day-chip${isActive?' active':''}${isToday&&!isActive?' today-chip':''}" onclick="selectDay('${d}')">
       <span class="day-name">${DAYS_ES[dt.getDay()]}</span>
-      <span class="day-num">${dt.getDate()}</span>
+      <span class="day-num">${day}</span>
     </div>`;
   }).join('');
 
@@ -819,8 +814,9 @@ function renderRanking() {
 
   const DAYS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   const labels = sortedDays.map(d => {
-    const dt = new Date(d + 'T12:00:00');
-    return DAYS_ES[dt.getDay()] + ' ' + dt.getDate();
+    const [y, mo, day] = d.split('-').map(Number);
+    const dt = new Date(y, mo - 1, day, 12, 0, 0);
+    return DAYS_ES[dt.getDay()] + ' ' + day;
   });
 
   rankChart = new Chart(ctx, {
