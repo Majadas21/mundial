@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiniela Mundial 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f4f5f7; min-height: 100vh; color: #1a1a1a; }
+
+  header { background: #1a1a2e; color: white; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 1.2rem; font-weight: 600; }
+  .player-badge { background: #e94560; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; cursor: pointer; }
+
+  .container { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+  .tab { flex: 1; padding: 0.6rem; border: none; border-radius: 8px; background: white; color: #666; cursor: pointer; font-size: 0.9rem; font-weight: 500; border: 1px solid #e0e0e0; transition: all 0.15s; }
+  .tab.active { background: #1a1a2e; color: white; border-color: #1a1a2e; }
+
+  .match-card { background: white; border-radius: 12px; border: 1px solid #e8e8e8; margin-bottom: 1rem; overflow: hidden; }
+  .match-header { background: #f8f9fa; padding: 0.5rem 1rem; font-size: 0.75rem; color: #888; display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; }
+  .match-body { padding: 1rem; }
+  .match-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+  .team { text-align: center; }
+  .team-flag { font-size: 2.5rem; line-height: 1; margin-bottom: 0.2rem; }
+  .team-name { font-size: 0.8rem; font-weight: 500; color: #444; }
+  .vs { font-size: 0.9rem; color: #bbb; font-weight: 500; }
+
+  .score-inputs { display: flex; align-items: center; justify-content: center; gap: 1rem; }
+  .score-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .score-group label { font-size: 0.7rem; color: #aaa; }
+  .score-input { width: 52px; height: 52px; text-align: center; font-size: 1.4rem; font-weight: 600; border: 2px solid #e0e0e0; border-radius: 10px; background: #fafafa; color: #1a1a2e; outline: none; transition: border-color 0.15s; -moz-appearance: textfield; }
+  .score-input::-webkit-inner-spin-button, .score-input::-webkit-outer-spin-button { display: none; }
+  .score-input:focus { border-color: #e94560; background: white; }
+  .score-dash { font-size: 1.5rem; color: #ccc; font-weight: 300; margin-top: 12px; }
+
+  .submit-btn { width: 100%; padding: 0.65rem; background: #e94560; color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 0.75rem; transition: opacity 0.15s; }
+  .submit-btn:hover { opacity: 0.9; }
+  .submit-btn:disabled { background: #ccc; cursor: default; }
+
+  .vote-done { text-align: center; padding: 0.5rem; font-size: 0.85rem; color: #4caf50; font-weight: 500; }
+  .vote-locked { text-align: center; padding: 0.6rem; background: #fff3cd; border-radius: 8px; font-size: 0.85rem; color: #856404; margin-top: 0.75rem; }
+  .result-reveal { text-align: center; padding: 0.6rem; background: #f0f4ff; border-radius: 8px; font-size: 0.85rem; color: #3b5bdb; margin-top: 0.75rem; }
+
+  .ranking-card { background: white; border-radius: 12px; border: 1px solid #e8e8e8; padding: 1.25rem; }
+  .ranking-row { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #f5f5f5; }
+  .ranking-row:last-child { border-bottom: none; }
+  .rank-pos { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+  .pos-1 { background: #ffd700; color: #7a5500; }
+  .pos-2 { background: #c0c0c0; color: #444; }
+  .pos-3 { background: #cd7f32; color: #4a2400; }
+  .pos-other { background: #f0f0f0; color: #666; }
+  .rank-name { flex: 1; font-weight: 500; }
+  .rank-pts { font-weight: 700; font-size: 1.1rem; color: #1a1a2e; }
+  .rank-detail { font-size: 0.75rem; color: #aaa; text-align: right; }
+
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
+  .modal { background: white; border-radius: 16px; padding: 2rem; max-width: 360px; width: 100%; text-align: center; }
+  .modal h2 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .modal p { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .name-input { width: 100%; padding: 0.75rem 1rem; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 1rem; outline: none; margin-bottom: 1rem; }
+  .name-input:focus { border-color: #e94560; }
+  .name-btn { width: 100%; padding: 0.75rem; background: #1a1a2e; color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+
+  .empty-state { text-align: center; padding: 3rem 1rem; color: #aaa; }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: #1a1a2e; color: white; padding: 0.75rem 1.5rem; border-radius: 30px; font-size: 0.9rem; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  .pts-pill { background: #e8f5e9; color: #2e7d32; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+
+  .friend-votes { margin-top: 0.75rem; border-top: 1px solid #f0f0f0; padding-top: 0.75rem; }
+  .friend-vote-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: #777; padding: 2px 0; }
+  .friend-vote-row .score { font-weight: 600; color: #444; }
+</style>
+</head>
+<body>
+
+<div id="nameModal" class="modal-overlay">
+  <div class="modal">
+    <div style="font-size:3rem;margin-bottom:0.5rem">⚽</div>
+    <h2>Quiniela Mundial 2026</h2>
+    <p>¿Cómo te llamas? Te recordaremos para la próxima vez.</p>
+    <input id="nameInput" class="name-input" type="text" placeholder="Tu nombre..." maxlength="20" />
+    <button class="name-btn" onclick="saveName()">Entrar al grupo</button>
+  </div>
+</div>
+
+<header>
+  <h1>⚽ Mundial 2026</h1>
+  <div class="player-badge" id="playerBadge" onclick="changeName()">...</div>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('today')" id="tab-today">Partidos de hoy</button>
+    <button class="tab" onclick="showTab('ranking')" id="tab-ranking">🏆 Clasificación</button>
+  </div>
+
+  <div id="view-today"></div>
+  <div id="view-ranking" style="display:none"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const FLAGS = {
+  'España': '🇪🇸', 'Alemania': '🇩🇪', 'Francia': '🇫🇷', 'Brasil': '🇧🇷',
+  'Argentina': '🇦🇷', 'Portugal': '🇵🇹', 'Inglaterra': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Italia': '🇮🇹',
+  'Países Bajos': '🇳🇱', 'Bélgica': '🇧🇪', 'Croacia': '🇭🇷', 'Uruguay': '🇺🇾',
+  'México': '🇲🇽', 'Marruecos': '🇲🇦', 'Senegal': '🇸🇳', 'Japón': '🇯🇵',
+  'Corea del Sur': '🇰🇷', 'Australia': '🇦🇺', 'Estados Unidos': '🇺🇸', 'Canadá': '🇨🇦',
+  'Ecuador': '🇪🇨', 'Colombia': '🇨🇴', 'Ghana': '🇬🇭', 'Suiza': '🇨🇭',
+  'Polonia': '🇵🇱', 'Serbia': '🇷🇸', 'Dinamarca': '🇩🇰', 'Camerún': '🇨🇲',
+  'Qatar': '🇶🇦', 'Túnez': '🇹🇳', 'Arabia Saudí': '🇸🇦', 'Costa Rica': '🇨🇷',
+  'Irán': '🇮🇷', 'Gales': '🏴󠁧󠁢󠁷󠁬󠁳󠁿', 'Suecia': '🇸🇪', 'Noruega': '🇳🇴',
+  'Turquía': '🇹🇷', 'Austria': '🇦🇹', 'Grecia': '🇬🇷', 'Rumanía': '🇷🇴',
+  'Eslovaquia': '🇸🇰', 'Ucrania': '🇺🇦', 'Hungría': '🇭🇺', 'Escocia': '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  'Albania': '🇦🇱', 'Georgia': '🇬🇪', 'Eslovenia': '🇸🇮', 'República Checa': '🇨🇿',
+};
+
+function getFlag(name) { return FLAGS[name] || '🏳️'; }
+
+const DEMO_MATCHES = [
+  { id: 'm1', home: 'España', away: 'Alemania', time: '15:00', group: 'Grupo A' },
+  { id: 'm2', home: 'Francia', away: 'Brasil', time: '18:00', group: 'Grupo B' },
+  { id: 'm3', home: 'Argentina', away: 'Portugal', time: '21:00', group: 'Grupo C' },
+];
+
+// Mapa de nombres en inglés (API) → español
+const TEAM_ES = {
+  'Spain':'España','Germany':'Alemania','France':'Francia','Brazil':'Brasil',
+  'Argentina':'Argentina','Portugal':'Portugal','England':'Inglaterra','Italy':'Italia',
+  'Netherlands':'Países Bajos','Belgium':'Bélgica','Croatia':'Croacia','Uruguay':'Uruguay',
+  'Mexico':'México','Morocco':'Marruecos','Senegal':'Senegal','Japan':'Japón',
+  'Korea Republic':'Corea del Sur','Australia':'Australia','United States':'Estados Unidos',
+  'Canada':'Canadá','Ecuador':'Ecuador','Colombia':'Colombia','Ghana':'Ghana',
+  'Switzerland':'Suiza','Poland':'Polonia','Serbia':'Serbia','Denmark':'Dinamarca',
+  'Cameroon':'Camerún','Tunisia':'Túnez','Saudi Arabia':'Arabia Saudí',
+  'Costa Rica':'Costa Rica','Iran':'Irán','Wales':'Gales','Sweden':'Suecia',
+  'Norway':'Noruega','Turkey':'Turquía','Austria':'Austria','Greece':'Grecia',
+  'Romania':'Rumanía','Slovakia':'Eslovaquia','Ukraine':'Ucrania','Hungary':'Hungría',
+  'Scotland':'Escocia','Albania':'Albania','Georgia':'Georgia','Slovenia':'Eslovenia',
+  'Czech Republic':'República Checa','Qatar':'Qatar',
+};
+
+
+let currentPlayer = localStorage.getItem('playerName') || '';
+let allData = {};
+
+function init() {
+  if (!currentPlayer) {
+    document.getElementById('nameModal').style.display = 'flex';
+  } else {
+    document.getElementById('nameModal').style.display = 'none';
+    document.getElementById('playerBadge').textContent = '👤 ' + currentPlayer;
+    loadData();
+  }
+}
+
+function saveName() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) return;
+  currentPlayer = name;
+  localStorage.setItem('playerName', name);
+  document.getElementById('nameModal').style.display = 'none';
+  document.getElementById('playerBadge').textContent = '👤 ' + name;
+  loadData();
+}
+
+document.getElementById('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
+
+function changeName() {
+  if (confirm('¿Quieres cambiar tu nombre? Esto NO borra tus votos previos.')) {
+    const name = prompt('Nuevo nombre:', currentPlayer);
+    if (name && name.trim()) {
+      currentPlayer = name.trim();
+      localStorage.setItem('playerName', currentPlayer);
+      document.getElementById('playerBadge').textContent = '👤 ' + currentPlayer;
+      renderAll();
+    }
+  }
+}
+
+function getStorageKey() { return 'mundialData_v1'; }
+
+async function fetchTodayMatches() {
+  // Lee el matches.json que genera el GitHub Action cada noche — sin token en el HTML
+  try {
+    const res = await fetch('matches.json?t=' + Date.now()); // cache-bust
+    if (!res.ok) return null;
+    const data = await res.json();
+    const today = new Date().toISOString().slice(0, 10);
+    if (data.date !== today) return null; // el JSON es de otro día (p.ej. en local)
+    return data.matches || [];
+  } catch { return null; }
+}
+
+async function loadData() {
+  const raw = localStorage.getItem(getStorageKey());
+  allData = raw ? JSON.parse(raw) : { votes: {} };
+  if (!allData.votes) allData.votes = {};
+
+  // Mostrar estado de carga
+  document.getElementById('view-today').innerHTML =
+    '<div class="empty-state"><div class="icon">⏳</div><p>Cargando partidos...</p></div>';
+
+  const apiMatches = await fetchTodayMatches();
+  if (apiMatches && apiMatches.length > 0) {
+    // Mezclar con resultados ya guardados localmente (por si el admin los introdujo a mano)
+    apiMatches.forEach(m => {
+      const saved = (allData.matches || []).find(s => s.id === m.id);
+      if (saved?.result && !m.result) m.result = saved.result;
+    });
+    allData.matches = apiMatches;
+  } else {
+    // Sin token o sin partidos hoy → usar los guardados o los de demo
+    if (!allData.matches || !allData.matches.length) allData.matches = DEMO_MATCHES;
+  }
+
+  saveData();
+  renderAll();
+}
+
+function saveData() {
+  localStorage.setItem(getStorageKey(), JSON.stringify(allData));
+}
+
+function isMatchStarted(timeStr) {
+  const now = new Date();
+  const [h, m] = timeStr.split(':').map(Number);
+  const matchTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+  return now >= matchTime;
+}
+
+function getMyVote(matchId) {
+  return allData.votes?.[matchId]?.[currentPlayer];
+}
+
+function getAllVotes(matchId) {
+  return allData.votes?.[matchId] || {};
+}
+
+function computePoints(vote, result) {
+  if (!vote || !result) return null;
+  let pts = 0;
+  const vSign = Math.sign(vote.home - vote.away);
+  const rSign = Math.sign(result.home - result.away);
+  if (vSign === rSign) pts += 50;
+  if (vote.home === result.home) pts += 25;
+  if (vote.away === result.away) pts += 25;
+  return pts;
+}
+
+function renderAll() {
+  renderToday();
+  renderRanking();
+}
+
+function renderToday() {
+  const el = document.getElementById('view-today');
+  const matches = allData.matches || DEMO_MATCHES;
+  if (!matches.length) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>No hay partidos configurados para hoy.</p></div>';
+    return;
+  }
+
+  el.innerHTML = matches.map(match => {
+    const started = isMatchStarted(match.time);
+    const myVote = getMyVote(match.id);
+    const allVotes = getAllVotes(match.id);
+    const result = match.result;
+
+    let inputSection = '';
+    if (myVote) {
+      inputSection = `<div class="vote-done">✅ Votado: ${myVote.home} – ${myVote.away}</div>`;
+      if (started && result) {
+        const pts = computePoints(myVote, result);
+        inputSection += `<div class="result-reveal">Resultado: ${result.home} – ${result.away} · <strong>${pts} pts</strong></div>`;
+      } else if (started) {
+        inputSection += `<div class="vote-locked">⏳ Partido en curso — resultado pendiente</div>`;
+      }
+    } else if (!started) {
+      inputSection = `
+        <div class="score-inputs">
+          <div class="score-group">
+            <label>${match.home}</label>
+            <input class="score-input" type="number" min="0" max="20" id="h_${match.id}" placeholder="0" />
+          </div>
+          <div class="score-dash">–</div>
+          <div class="score-group">
+            <label>${match.away}</label>
+            <input class="score-input" type="number" min="0" max="20" id="a_${match.id}" placeholder="0" />
+          </div>
+        </div>
+        <button class="submit-btn" onclick="submitVote('${match.id}')">Guardar pronóstico</button>`;
+    } else {
+      inputSection = `<div class="vote-locked">🔒 El partido ya ha comenzado — no se puede votar</div>`;
+    }
+
+    let friendVotesHtml = '';
+    if (started) {
+      const others = Object.entries(allVotes).filter(([k]) => k !== currentPlayer);
+      if (others.length) {
+        friendVotesHtml = `<div class="friend-votes"><p style="font-size:0.75rem;color:#aaa;margin-bottom:4px">Pronósticos de amigos</p>` +
+          others.map(([name, v]) => {
+            const pts = result ? computePoints(v, result) : null;
+            return `<div class="friend-vote-row"><span>${name}</span><span class="score">${v.home} – ${v.away}${pts !== null ? ' · ' + pts + ' pts' : ''}</span></div>`;
+          }).join('') + `</div>`;
+      }
+    }
+
+    return `
+    <div class="match-card">
+      <div class="match-header"><span>${match.group || ''}</span><span>⏰ ${match.time}</span></div>
+      <div class="match-body">
+        <div class="match-teams">
+          <div class="team"><div class="team-flag">${getFlag(match.home)}</div><div class="team-name">${match.home}</div></div>
+          <div class="vs">vs</div>
+          <div class="team"><div class="team-flag">${getFlag(match.away)}</div><div class="team-name">${match.away}</div></div>
+        </div>
+        ${inputSection}
+        ${friendVotesHtml}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function submitVote(matchId) {
+  const h = parseInt(document.getElementById('h_' + matchId).value);
+  const a = parseInt(document.getElementById('a_' + matchId).value);
+  if (isNaN(h) || isNaN(a) || h < 0 || a < 0) { showToast('Introduce un resultado válido'); return; }
+  if (!allData.votes) allData.votes = {};
+  if (!allData.votes[matchId]) allData.votes[matchId] = {};
+  allData.votes[matchId][currentPlayer] = { home: h, away: a, ts: Date.now() };
+  saveData();
+  renderAll();
+  showToast('¡Pronóstico guardado! 🎯');
+}
+
+function renderRanking() {
+  const el = document.getElementById('view-ranking');
+  const matches = allData.matches || [];
+  const players = {};
+
+  matches.forEach(match => {
+    const votes = getAllVotes(match.id);
+    const result = match.result;
+    Object.entries(votes).forEach(([name, vote]) => {
+      if (!players[name]) players[name] = { pts: 0, exact: 0, correct: 0, total: 0 };
+      players[name].total++;
+      if (result) {
+        const pts = computePoints(vote, result);
+        players[name].pts += pts;
+        if (pts === 100) players[name].exact++;
+        if (pts >= 50) players[name].correct++;
+      }
+    });
+  });
+
+  const sorted = Object.entries(players).sort((a, b) => b[1].pts - a[1].pts);
+
+  if (!sorted.length) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">🏆</div><p>Aún no hay votos. ¡Sé el primero en pronosticar!</p></div>';
+    return;
+  }
+
+  const posClass = (i) => ['pos-1', 'pos-2', 'pos-3'][i] || 'pos-other';
+  const posEmoji = (i) => ['🥇', '🥈', '🥉'][i] || (i + 1);
+
+  el.innerHTML = `<div class="ranking-card">` +
+    sorted.map(([name, s], i) => `
+    <div class="ranking-row">
+      <div class="rank-pos ${posClass(i)}">${posEmoji(i)}</div>
+      <div class="rank-name">${name}${name === currentPlayer ? ' <span style="font-size:0.7rem;color:#e94560">tú</span>' : ''}</div>
+      <div style="text-align:right">
+        <div class="rank-pts">${s.pts} pts</div>
+        <div class="rank-detail">${s.exact} exactos · ${s.correct}/${s.total} ganadores</div>
+      </div>
+    </div>`).join('') + `</div>
+    <p style="text-align:center;font-size:0.75rem;color:#bbb;margin-top:1rem">🔒 · 50 pts ganador/empate · +25 goles local · +25 goles visitante</p>`;
+}
+
+function showTab(tab) {
+  document.getElementById('view-today').style.display = tab === 'today' ? 'block' : 'none';
+  document.getElementById('view-ranking').style.display = tab === 'ranking' ? 'block' : 'none';
+  document.getElementById('tab-today').className = 'tab' + (tab === 'today' ? ' active' : '');
+  document.getElementById('tab-ranking').className = 'tab' + (tab === 'ranking' ? ' active' : '');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+document.getElementById('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
+
+init();
+</script>
+</body>
+</html>
