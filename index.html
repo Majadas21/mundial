@@ -529,12 +529,20 @@ async function loadAllDays() {
   renderAll();
 
   // 2. Intenta cargar matches.json (generado por GitHub Action)
+  // Formato: { "2026-06-15": [{...}, ...], "2026-06-16": [{...}, ...] }
   try {
     const res = await fetch('./matches.json?t=' + Date.now());
     if (res.ok) {
       const data = await res.json();
-      if (data.date && data.matches?.length) {
-        allDays[data.date] = data;
+      // Cada clave es una fecha, el valor es un array de partidos
+      let updated = false;
+      for (const [date, matches] of Object.entries(data)) {
+        if (Array.isArray(matches) && matches.length) {
+          allDays[date] = { date, matches };
+          updated = true;
+        }
+      }
+      if (updated) {
         renderDaySelector();
         renderAll();
       }
@@ -565,9 +573,14 @@ function subscribeVotes() {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-function isStarted(timeStr) {
+function isStarted(match) {
   const now = new Date();
-  const [h,m] = timeStr.split(':').map(Number);
+  if (match.datetime) {
+    // "2026-06-16T00:00" — fecha y hora exactas en Madrid
+    return now >= new Date(match.datetime);
+  }
+  // Fallback para partidos de demo (solo tienen time)
+  const [h,m] = match.time.split(':').map(Number);
   return now >= new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
 }
 
@@ -635,7 +648,7 @@ function renderMatches() {
   }
 
   el.innerHTML = matches.map(match => {
-    const started = isStarted(match.time);
+    const started = isStarted(match);
     const votes = allVotes[match.id] || {};
     const myVoteEntry = Object.values(votes).find(v => v.name === currentPlayer);
     const result = match.result;
