@@ -1,12 +1,50 @@
 {
-  "date": "2026-06-15",
-  "matches": [
+  "2026-06-14": [
+    {
+      "id": "m537351",
+      "home": "Alemania",
+      "away": "Curaçao",
+      "time": "19:00",
+      "datetime": "2026-06-14T19:00",
+      "group": "Grupo E",
+      "result": {
+        "home": 7,
+        "away": 1
+      }
+    },
+    {
+      "id": "m537357",
+      "home": "Países Bajos",
+      "away": "Japón",
+      "time": "22:00",
+      "datetime": "2026-06-14T22:00",
+      "group": "Grupo F",
+      "result": {
+        "home": 2,
+        "away": 2
+      }
+    }
+  ],
+  "2026-06-15": [
+    {
+      "id": "m537352",
+      "home": "Costa de Marfil",
+      "away": "Ecuador",
+      "time": "01:00",
+      "datetime": "2026-06-15T01:00",
+      "group": "Grupo E",
+      "result": {
+        "home": 1,
+        "away": 0
+      }
+    },
     {
       "id": "m537358",
       "home": "Suecia",
       "away": "Túnez",
       "time": "04:00",
-      "group": "GROUP_F",
+      "datetime": "2026-06-15T04:00",
+      "group": "Grupo F",
       "result": {
         "home": 5,
         "away": 1
@@ -15,23 +53,36 @@
     {
       "id": "m537369",
       "home": "España",
-      "away": "Cape Verde Islands",
+      "away": "Cabo Verde",
       "time": "18:00",
-      "group": "GROUP_H"
+      "datetime": "2026-06-15T18:00",
+      "group": "Grupo H"
     },
     {
       "id": "m537363",
       "home": "Bélgica",
-      "away": "Egypt",
+      "away": "Egipto",
       "time": "21:00",
-      "group": "GROUP_G"
-    },
+      "datetime": "2026-06-15T21:00",
+      "group": "Grupo G"
+    }
+  ],
+  "2026-06-16": [
     {
       "id": "m537370",
       "home": "Arabia Saudí",
       "away": "Uruguay",
       "time": "00:00",
-      "group": "GROUP_H"
+      "datetime": "2026-06-16T00:00",
+      "group": "Grupo H"
+    },
+    {
+      "id": "m537364",
+      "home": "Irán",
+      "away": "Nueva Zelanda",
+      "time": "03:00",
+      "datetime": "2026-06-16T03:00",
+      "group": "Grupo G"
     }
   ]
 }
