@@ -1,0 +1,37 @@
+{
+  "date": "2026-06-15",
+  "matches": [
+    {
+      "id": "m537358",
+      "home": "Suecia",
+      "away": "Túnez",
+      "time": "04:00",
+      "group": "GROUP_F",
+      "result": {
+        "home": 5,
+        "away": 1
+      }
+    },
+    {
+      "id": "m537369",
+      "home": "España",
+      "away": "Cape Verde Islands",
+      "time": "18:00",
+      "group": "GROUP_H"
+    },
+    {
+      "id": "m537363",
+      "home": "Bélgica",
+      "away": "Egypt",
+      "time": "21:00",
+      "group": "GROUP_G"
+    },
+    {
+      "id": "m537370",
+      "home": "Arabia Saudí",
+      "away": "Uruguay",
+      "time": "00:00",
+      "group": "GROUP_H"
+    }
+  ]
+}
