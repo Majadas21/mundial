@@ -93,7 +93,8 @@ def fetch_today() -> list:
         print(f"❌ Error HTTP {e.code} al llamar a la API.", file=sys.stderr)
         return []
 
-    matches = []
+    # Agrupar partidos por su fecha real en Madrid (un partido a las 00:00 va en su propio día)
+    days = {}
     for m in data.get("matches", []):
         kick_utc = datetime.fromisoformat(m["utcDate"].replace("Z", "+00:00"))
         kick_madrid = kick_utc + timedelta(hours=2)
@@ -101,6 +102,7 @@ def fetch_today() -> list:
         if not (window_start <= kick_utc < window_end):
             continue
 
+        day_key = kick_madrid.strftime("%Y-%m-%d")  # fecha real del partido en Madrid
         home = to_es(m["homeTeam"]["name"])
         away = to_es(m["awayTeam"]["name"])
         match = {
@@ -108,6 +110,7 @@ def fetch_today() -> list:
             "home": home,
             "away": away,
             "time": kick_madrid.strftime("%H:%M"),
+            "datetime": kick_madrid.strftime("%Y-%m-%dT%H:%M"),
             "group": format_group(m.get("group") or m.get("stage") or ""),
         }
         if m.get("status") == "FINISHED" and m.get("score", {}).get("fullTime"):
@@ -115,19 +118,17 @@ def fetch_today() -> list:
                 "home": m["score"]["fullTime"]["home"],
                 "away": m["score"]["fullTime"]["away"],
             }
-        matches.append(match)
+        if day_key not in days:
+            days[day_key] = []
+        days[day_key].append(match)
 
-    print(f"✅ {len(matches)} partido(s) en la jornada del {jornada_label}.")
-    return matches
+    total = sum(len(v) for v in days.values())
+    print(f"✅ {total} partido(s) en {len(days)} día(s): {sorted(days.keys())}.")
+    return days
 
 if __name__ == "__main__":
-    matches = fetch_today()
-    now_madrid = datetime.now(timezone.utc) + timedelta(hours=2)
-    jornada_label = now_madrid.strftime("%Y-%m-%d")
-    output = {
-        "date": jornada_label,
-        "matches": matches,
-    }
+    days = fetch_today()
+    # days = { "2026-06-15": [...], "2026-06-16": [...] }
     with open("matches.json", "w", encoding="utf-8") as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
+        json.dump(days, f, ensure_ascii=False, indent=2)
     print("📄 matches.json generado correctamente.")
