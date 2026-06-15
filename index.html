@@ -445,7 +445,7 @@ const FLAGS = {
   'Jordania':'🇯🇴','Emiratos Árabes':'🇦🇪','Uzbekistán':'🇺🇿',
   'Indonesia':'🇮🇩','Tailandia':'🇹🇭','China':'🇨🇳','India':'🇮🇳',
   'Vietnam':'🇻🇳','Panamá':'🇵🇦','Jamaica':'🇯🇲','Honduras':'🇭🇳',
-  'El Salvador':'🇸🇻','Cuba':'🇨🇺','Trinidad y Tobago':'🇹🇹',
+  'El Salvador':'🇸🇻','Cuba':'🇨🇺','Trinidad y Tobago':'🇹🇹','Curazao':'🇨🇼','Curaçao':'🇨🇼','Escocia':'🏴‍','República Dominicana':'🇩🇴','Haití':'🇭🇹','Líbano':'🇱🇧','Irak':'🇮🇶',
 };
 function getFlag(name) { return FLAGS[name] || '🏳️'; }
 
@@ -456,17 +456,10 @@ function demoDate(offset) {
   return d.toISOString().slice(0,10);
 }
 const DEMO_DAYS = {
-  [demoDate(-2)]: { date: demoDate(-2), matches: [
-    { id:'h1', home:'España', away:'Alemania', time:'15:00', group:'Grupo A', result:{home:2,away:1} },
-    { id:'h2', home:'Francia', away:'Brasil', time:'21:00', group:'Grupo B', result:{home:1,away:1} },
-  ]},
-  [demoDate(-1)]: { date: demoDate(-1), matches: [
-    { id:'h3', home:'Argentina', away:'Portugal', time:'18:00', group:'Grupo C', result:{home:3,away:0} },
-  ]},
   [TODAY]: { date: TODAY, matches: [
-    { id:'m1', home:'España', away:'Alemania', time:'15:00', group:'Grupo A' },
-    { id:'m2', home:'Francia', away:'Brasil', time:'18:00', group:'Grupo B' },
-    { id:'m3', home:'Argentina', away:'Portugal', time:'21:00', group:'Grupo C' },
+    { id:'m1', home:'España', away:'Alemania', time:'15:00', datetime: TODAY+'T15:00', group:'Grupo A' },
+    { id:'m2', home:'Francia', away:'Brasil',  time:'18:00', datetime: TODAY+'T18:00', group:'Grupo B' },
+    { id:'m3', home:'Argentina', away:'Portugal', time:'21:00', datetime: TODAY+'T21:00', group:'Grupo C' },
   ]},
 };
 
@@ -658,7 +651,7 @@ function renderMatches() {
       } else if (started) {
         inputSection += `<div class="vote-locked"><span class="live-dot"></span>Partido en juego — resultado pendiente</div>`;
       }
-    } else if (!started && selectedDate === TODAY) {
+    } else if (!started) {
       inputSection = `
         <div class="score-inputs">
           <div class="score-group">
@@ -672,8 +665,6 @@ function renderMatches() {
           </div>
         </div>
         <button class="submit-btn" onclick="submitVote('${match.id}')">Guardar pronóstico</button>`;
-    } else if (!started) {
-      inputSection = `<div class="vote-locked">📋 Partido histórico — votación cerrada</div>`;
     } else {
       inputSection = `<div class="vote-locked">🔒 Partido comenzado — ya no se puede votar</div>`;
     }
