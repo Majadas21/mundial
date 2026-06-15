@@ -69,11 +69,11 @@
   .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: #1a1a2e; color: white; padding: 0.75rem 1.5rem; border-radius: 30px; font-size: 0.9rem; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
   .toast.show { opacity: 1; }
 
-  .pts-pill { background: #e8f5e9; color: #2e7d32; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
-
   .friend-votes { margin-top: 0.75rem; border-top: 1px solid #f0f0f0; padding-top: 0.75rem; }
   .friend-vote-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: #777; padding: 2px 0; }
   .friend-vote-row .score { font-weight: 600; color: #444; }
+
+  .spinner { text-align: center; padding: 3rem; color: #aaa; font-size: 0.9rem; }
 </style>
 </head>
 <body>
@@ -98,30 +98,44 @@
     <button class="tab active" onclick="showTab('today')" id="tab-today">Partidos de hoy</button>
     <button class="tab" onclick="showTab('ranking')" id="tab-ranking">🏆 Clasificación</button>
   </div>
-
-  <div id="view-today"></div>
+  <div id="view-today"><div class="spinner">Cargando...</div></div>
   <div id="view-ranking" style="display:none"></div>
 </div>
 
 <div id="toast" class="toast"></div>
 
-<script>
-const FLAGS = {
-  'España': '🇪🇸', 'Alemania': '🇩🇪', 'Francia': '🇫🇷', 'Brasil': '🇧🇷',
-  'Argentina': '🇦🇷', 'Portugal': '🇵🇹', 'Inglaterra': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Italia': '🇮🇹',
-  'Países Bajos': '🇳🇱', 'Bélgica': '🇧🇪', 'Croacia': '🇭🇷', 'Uruguay': '🇺🇾',
-  'México': '🇲🇽', 'Marruecos': '🇲🇦', 'Senegal': '🇸🇳', 'Japón': '🇯🇵',
-  'Corea del Sur': '🇰🇷', 'Australia': '🇦🇺', 'Estados Unidos': '🇺🇸', 'Canadá': '🇨🇦',
-  'Ecuador': '🇪🇨', 'Colombia': '🇨🇴', 'Ghana': '🇬🇭', 'Suiza': '🇨🇭',
-  'Polonia': '🇵🇱', 'Serbia': '🇷🇸', 'Dinamarca': '🇩🇰', 'Camerún': '🇨🇲',
-  'Qatar': '🇶🇦', 'Túnez': '🇹🇳', 'Arabia Saudí': '🇸🇦', 'Costa Rica': '🇨🇷',
-  'Irán': '🇮🇷', 'Gales': '🏴󠁧󠁢󠁷󠁬󠁳󠁿', 'Suecia': '🇸🇪', 'Noruega': '🇳🇴',
-  'Turquía': '🇹🇷', 'Austria': '🇦🇹', 'Grecia': '🇬🇷', 'Rumanía': '🇷🇴',
-  'Eslovaquia': '🇸🇰', 'Ucrania': '🇺🇦', 'Hungría': '🇭🇺', 'Escocia': '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
-  'Albania': '🇦🇱', 'Georgia': '🇬🇪', 'Eslovenia': '🇸🇮', 'República Checa': '🇨🇿',
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC9wtUHQXZwok7Y81YqodnVzT-5KWPFhyo",
+  authDomain: "mundial-99cdc.firebaseapp.com",
+  databaseURL: "https://mundial-99cdc-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "mundial-99cdc",
+  storageBucket: "mundial-99cdc.firebasestorage.app",
+  messagingSenderId: "356216751389",
+  appId: "1:356216751389:web:8f153ce31ac45514d08df4"
 };
 
-function getFlag(name) { return FLAGS[name] || '🏳️'; }
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const FLAGS = {
+  'España':'🇪🇸','Alemania':'🇩🇪','Francia':'🇫🇷','Brasil':'🇧🇷',
+  'Argentina':'🇦🇷','Portugal':'🇵🇹','Inglaterra':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Italia':'🇮🇹',
+  'Países Bajos':'🇳🇱','Bélgica':'🇧🇪','Croacia':'🇭🇷','Uruguay':'🇺🇾',
+  'México':'🇲🇽','Marruecos':'🇲🇦','Senegal':'🇸🇳','Japón':'🇯🇵',
+  'Corea del Sur':'🇰🇷','Australia':'🇦🇺','Estados Unidos':'🇺🇸','Canadá':'🇨🇦',
+  'Ecuador':'🇪🇨','Colombia':'🇨🇴','Ghana':'🇬🇭','Suiza':'🇨🇭',
+  'Polonia':'🇵🇱','Serbia':'🇷🇸','Dinamarca':'🇩🇰','Camerún':'🇨🇲',
+  'Qatar':'🇶🇦','Túnez':'🇹🇳','Arabia Saudí':'🇸🇦','Costa Rica':'🇨🇷',
+  'Irán':'🇮🇷','Gales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','Suecia':'🇸🇪','Noruega':'🇳🇴',
+  'Turquía':'🇹🇷','Austria':'🇦🇹','Grecia':'🇬🇷','Rumanía':'🇷🇴',
+  'Eslovaquia':'🇸🇰','Ucrania':'🇺🇦','Hungría':'🇭🇺','Escocia':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  'Albania':'🇦🇱','Georgia':'🇬🇪','Eslovenia':'🇸🇮','República Checa':'🇨🇿',
+};
 
 const DEMO_MATCHES = [
   { id: 'm1', home: 'España', away: 'Alemania', time: '15:00', group: 'Grupo A' },
@@ -129,26 +143,14 @@ const DEMO_MATCHES = [
   { id: 'm3', home: 'Argentina', away: 'Portugal', time: '21:00', group: 'Grupo C' },
 ];
 
-// Mapa de nombres en inglés (API) → español
-const TEAM_ES = {
-  'Spain':'España','Germany':'Alemania','France':'Francia','Brazil':'Brasil',
-  'Argentina':'Argentina','Portugal':'Portugal','England':'Inglaterra','Italy':'Italia',
-  'Netherlands':'Países Bajos','Belgium':'Bélgica','Croatia':'Croacia','Uruguay':'Uruguay',
-  'Mexico':'México','Morocco':'Marruecos','Senegal':'Senegal','Japan':'Japón',
-  'Korea Republic':'Corea del Sur','Australia':'Australia','United States':'Estados Unidos',
-  'Canada':'Canadá','Ecuador':'Ecuador','Colombia':'Colombia','Ghana':'Ghana',
-  'Switzerland':'Suiza','Poland':'Polonia','Serbia':'Serbia','Denmark':'Dinamarca',
-  'Cameroon':'Camerún','Tunisia':'Túnez','Saudi Arabia':'Arabia Saudí',
-  'Costa Rica':'Costa Rica','Iran':'Irán','Wales':'Gales','Sweden':'Suecia',
-  'Norway':'Noruega','Turkey':'Turquía','Austria':'Austria','Greece':'Grecia',
-  'Romania':'Rumanía','Slovakia':'Eslovaquia','Ukraine':'Ucrania','Hungary':'Hungría',
-  'Scotland':'Escocia','Albania':'Albania','Georgia':'Georgia','Slovenia':'Eslovenia',
-  'Czech Republic':'República Checa','Qatar':'Qatar',
-};
-
+function getFlag(name) { return FLAGS[name] || '🏳️'; }
+function safeKey(name) { return name.replace(/[.#$/\[\]]/g, '_'); }
 
 let currentPlayer = localStorage.getItem('playerName') || '';
-let allData = {};
+let matches = [];
+let allVotesCache = {};  // { matchId: { playerName: { home, away } } }
+
+// ── Nombre del jugador ────────────────────────────────────────────────────
 
 function init() {
   if (!currentPlayer) {
@@ -156,23 +158,23 @@ function init() {
   } else {
     document.getElementById('nameModal').style.display = 'none';
     document.getElementById('playerBadge').textContent = '👤 ' + currentPlayer;
-    loadData();
+    loadMatches();
+    subscribeToVotes();
   }
 }
 
-function saveName() {
+window.saveName = function() {
   const name = document.getElementById('nameInput').value.trim();
   if (!name) return;
   currentPlayer = name;
   localStorage.setItem('playerName', name);
   document.getElementById('nameModal').style.display = 'none';
   document.getElementById('playerBadge').textContent = '👤 ' + name;
-  loadData();
-}
+  loadMatches();
+  subscribeToVotes();
+};
 
-document.getElementById('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
-
-function changeName() {
+window.changeName = function() {
   if (confirm('¿Quieres cambiar tu nombre? Esto NO borra tus votos previos.')) {
     const name = prompt('Nuevo nombre:', currentPlayer);
     if (name && name.trim()) {
@@ -182,50 +184,71 @@ function changeName() {
       renderAll();
     }
   }
-}
+};
 
-function getStorageKey() { return 'mundialData_v1'; }
+document.getElementById('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
 
-async function fetchTodayMatches() {
-  // Lee el matches.json que genera el GitHub Action cada noche — sin token en el HTML
+// ── Partidos (matches.json generado por GitHub Action) ────────────────────
+
+async function loadMatches() {
   try {
-    const res = await fetch('matches.json?t=' + Date.now()); // cache-bust
-    if (!res.ok) return null;
-    const data = await res.json();
-    const today = new Date().toISOString().slice(0, 10);
-    if (data.date !== today) return null; // el JSON es de otro día (p.ej. en local)
-    return data.matches || [];
-  } catch { return null; }
-}
-
-async function loadData() {
-  const raw = localStorage.getItem(getStorageKey());
-  allData = raw ? JSON.parse(raw) : { votes: {} };
-  if (!allData.votes) allData.votes = {};
-
-  // Mostrar estado de carga
-  document.getElementById('view-today').innerHTML =
-    '<div class="empty-state"><div class="icon">⏳</div><p>Cargando partidos...</p></div>';
-
-  const apiMatches = await fetchTodayMatches();
-  if (apiMatches && apiMatches.length > 0) {
-    // Mezclar con resultados ya guardados localmente (por si el admin los introdujo a mano)
-    apiMatches.forEach(m => {
-      const saved = (allData.matches || []).find(s => s.id === m.id);
-      if (saved?.result && !m.result) m.result = saved.result;
-    });
-    allData.matches = apiMatches;
-  } else {
-    // Sin token o sin partidos hoy → usar los guardados o los de demo
-    if (!allData.matches || !allData.matches.length) allData.matches = DEMO_MATCHES;
+    const res = await fetch('matches.json?t=' + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      const today = new Date().toISOString().slice(0, 10);
+      matches = (data.date === today && data.matches?.length) ? data.matches : DEMO_MATCHES;
+    } else {
+      matches = DEMO_MATCHES;
+    }
+  } catch {
+    matches = DEMO_MATCHES;
   }
-
-  saveData();
   renderAll();
 }
 
-function saveData() {
-  localStorage.setItem(getStorageKey(), JSON.stringify(allData));
+// ── Votos en Firebase (tiempo real) ──────────────────────────────────────
+
+function subscribeToVotes() {
+  // Escucha en tiempo real todos los votos — el ranking se actualiza solo
+  onValue(ref(db, 'votes'), snapshot => {
+    allVotesCache = snapshot.val() || {};
+    renderAll();
+  });
+}
+
+function getMyVote(matchId) {
+  return allVotesCache[matchId]?.[safeKey(currentPlayer)];
+}
+
+function getAllVotes(matchId) {
+  return allVotesCache[matchId] || {};
+}
+
+window.submitVote = async function(matchId) {
+  const h = parseInt(document.getElementById('h_' + matchId).value);
+  const a = parseInt(document.getElementById('a_' + matchId).value);
+  if (isNaN(h) || isNaN(a) || h < 0 || a < 0) { showToast('Introduce un resultado válido'); return; }
+
+  const playerKey = safeKey(currentPlayer);
+  const voteRef = ref(db, `votes/${matchId}/${playerKey}`);
+
+  // Comprobar que no existe ya un voto (doble protección además de las reglas)
+  const existing = await get(voteRef);
+  if (existing.exists()) { showToast('Ya has votado este partido'); return; }
+
+  await set(voteRef, { home: h, away: a, ts: Date.now(), name: currentPlayer });
+  showToast('¡Pronóstico guardado! 🎯');
+};
+
+// ── Puntuación ────────────────────────────────────────────────────────────
+
+function computePoints(vote, result) {
+  if (!vote || !result) return null;
+  let pts = 0;
+  if (Math.sign(vote.home - vote.away) === Math.sign(result.home - result.away)) pts += 50;
+  if (vote.home === result.home) pts += 25;
+  if (vote.away === result.away) pts += 25;
+  return pts;
 }
 
 function isMatchStarted(timeStr) {
@@ -235,24 +258,7 @@ function isMatchStarted(timeStr) {
   return now >= matchTime;
 }
 
-function getMyVote(matchId) {
-  return allData.votes?.[matchId]?.[currentPlayer];
-}
-
-function getAllVotes(matchId) {
-  return allData.votes?.[matchId] || {};
-}
-
-function computePoints(vote, result) {
-  if (!vote || !result) return null;
-  let pts = 0;
-  const vSign = Math.sign(vote.home - vote.away);
-  const rSign = Math.sign(result.home - result.away);
-  if (vSign === rSign) pts += 50;
-  if (vote.home === result.home) pts += 25;
-  if (vote.away === result.away) pts += 25;
-  return pts;
-}
+// ── Render ────────────────────────────────────────────────────────────────
 
 function renderAll() {
   renderToday();
@@ -261,24 +267,23 @@ function renderAll() {
 
 function renderToday() {
   const el = document.getElementById('view-today');
-  const matches = allData.matches || DEMO_MATCHES;
   if (!matches.length) {
-    el.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>No hay partidos configurados para hoy.</p></div>';
+    el.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>No hay partidos hoy.</p></div>';
     return;
   }
 
   el.innerHTML = matches.map(match => {
     const started = isMatchStarted(match.time);
     const myVote = getMyVote(match.id);
-    const allVotes = getAllVotes(match.id);
+    const votes = getAllVotes(match.id);
     const result = match.result;
 
     let inputSection = '';
     if (myVote) {
-      inputSection = `<div class="vote-done">✅ Votado: ${myVote.home} – ${myVote.away}</div>`;
-      if (started && result) {
+      inputSection = `<div class="vote-done">✅ Tu pronóstico: ${myVote.home} – ${myVote.away}</div>`;
+      if (result) {
         const pts = computePoints(myVote, result);
-        inputSection += `<div class="result-reveal">Resultado: ${result.home} – ${result.away} · <strong>${pts} pts</strong></div>`;
+        inputSection += `<div class="result-reveal">Resultado final: ${result.home} – ${result.away} · <strong>${pts} pts</strong></div>`;
       } else if (started) {
         inputSection += `<div class="vote-locked">⏳ Partido en curso — resultado pendiente</div>`;
       }
@@ -297,17 +302,18 @@ function renderToday() {
         </div>
         <button class="submit-btn" onclick="submitVote('${match.id}')">Guardar pronóstico</button>`;
     } else {
-      inputSection = `<div class="vote-locked">🔒 El partido ya ha comenzado — no se puede votar</div>`;
+      inputSection = `<div class="vote-locked">🔒 Partido comenzado — ya no se puede votar</div>`;
     }
 
+    // Votos de amigos: solo visibles cuando el partido ha empezado
     let friendVotesHtml = '';
     if (started) {
-      const others = Object.entries(allVotes).filter(([k]) => k !== currentPlayer);
+      const others = Object.values(votes).filter(v => v.name !== currentPlayer);
       if (others.length) {
         friendVotesHtml = `<div class="friend-votes"><p style="font-size:0.75rem;color:#aaa;margin-bottom:4px">Pronósticos de amigos</p>` +
-          others.map(([name, v]) => {
+          others.map(v => {
             const pts = result ? computePoints(v, result) : null;
-            return `<div class="friend-vote-row"><span>${name}</span><span class="score">${v.home} – ${v.away}${pts !== null ? ' · ' + pts + ' pts' : ''}</span></div>`;
+            return `<div class="friend-vote-row"><span>${v.name}</span><span class="score">${v.home} – ${v.away}${pts !== null ? ' · ' + pts + ' pts' : ''}</span></div>`;
           }).join('') + `</div>`;
       }
     }
@@ -328,27 +334,15 @@ function renderToday() {
   }).join('');
 }
 
-function submitVote(matchId) {
-  const h = parseInt(document.getElementById('h_' + matchId).value);
-  const a = parseInt(document.getElementById('a_' + matchId).value);
-  if (isNaN(h) || isNaN(a) || h < 0 || a < 0) { showToast('Introduce un resultado válido'); return; }
-  if (!allData.votes) allData.votes = {};
-  if (!allData.votes[matchId]) allData.votes[matchId] = {};
-  allData.votes[matchId][currentPlayer] = { home: h, away: a, ts: Date.now() };
-  saveData();
-  renderAll();
-  showToast('¡Pronóstico guardado! 🎯');
-}
-
 function renderRanking() {
   const el = document.getElementById('view-ranking');
-  const matches = allData.matches || [];
   const players = {};
 
   matches.forEach(match => {
     const votes = getAllVotes(match.id);
     const result = match.result;
-    Object.entries(votes).forEach(([name, vote]) => {
+    Object.values(votes).forEach(vote => {
+      const name = vote.name || 'Desconocido';
       if (!players[name]) players[name] = { pts: 0, exact: 0, correct: 0, total: 0 };
       players[name].total++;
       if (result) {
@@ -363,12 +357,12 @@ function renderRanking() {
   const sorted = Object.entries(players).sort((a, b) => b[1].pts - a[1].pts);
 
   if (!sorted.length) {
-    el.innerHTML = '<div class="empty-state"><div class="icon">🏆</div><p>Aún no hay votos. ¡Sé el primero en pronosticar!</p></div>';
+    el.innerHTML = '<div class="empty-state"><div class="icon">🏆</div><p>Aún no hay votos. ¡Sé el primero!</p></div>';
     return;
   }
 
-  const posClass = (i) => ['pos-1', 'pos-2', 'pos-3'][i] || 'pos-other';
-  const posEmoji = (i) => ['🥇', '🥈', '🥉'][i] || (i + 1);
+  const posClass = i => ['pos-1','pos-2','pos-3'][i] || 'pos-other';
+  const posEmoji = i => ['🥇','🥈','🥉'][i] || (i + 1);
 
   el.innerHTML = `<div class="ranking-card">` +
     sorted.map(([name, s], i) => `
@@ -380,15 +374,15 @@ function renderRanking() {
         <div class="rank-detail">${s.exact} exactos · ${s.correct}/${s.total} ganadores</div>
       </div>
     </div>`).join('') + `</div>
-    <p style="text-align:center;font-size:0.75rem;color:#bbb;margin-top:1rem">🔒 · 50 pts ganador/empate · +25 goles local · +25 goles visitante</p>`;
+    <p style="text-align:center;font-size:0.75rem;color:#bbb;margin-top:1rem">50 pts ganador/empate · +25 goles local · +25 goles visitante</p>`;
 }
 
-function showTab(tab) {
+window.showTab = function(tab) {
   document.getElementById('view-today').style.display = tab === 'today' ? 'block' : 'none';
   document.getElementById('view-ranking').style.display = tab === 'ranking' ? 'block' : 'none';
   document.getElementById('tab-today').className = 'tab' + (tab === 'today' ? ' active' : '');
   document.getElementById('tab-ranking').className = 'tab' + (tab === 'ranking' ? ' active' : '');
-}
+};
 
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -396,8 +390,6 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
-
-document.getElementById('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
 
 init();
 </script>
