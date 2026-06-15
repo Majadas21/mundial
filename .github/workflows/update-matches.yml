@@ -1,0 +1,33 @@
+name: Actualizar partidos del día
+
+on:
+  schedule:
+    # Se ejecuta cada día a las 09:00 hora española (07:00 UTC en verano CEST)
+    # Los partidos en EEUU/México terminan de madrugada en España, así que a las 9am ya están todos finalizados
+    - cron: '0 7 * * *'
+  # También se puede lanzar manualmente desde la pestaña Actions de GitHub
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # necesario para hacer push del matches.json
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Generar matches.json con la API
+        env:
+          FOOTBALL_TOKEN: ${{ secrets.FOOTBALL_API_TOKEN }}
+        run: |
+          python3 scripts/fetch_matches.py
+
+      - name: Commit y push si hay cambios
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add matches.json
+          git diff --cached --quiet || git commit -m "⚽ Partidos actualizados $(date +'%Y-%m-%d')"
+          git push
