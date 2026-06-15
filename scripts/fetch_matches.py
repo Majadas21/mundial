@@ -70,13 +70,16 @@ def fetch_today() -> list:
         print("⚠️  FOOTBALL_TOKEN no configurado — generando matches.json vacío.")
         return []
 
-    # La "jornada Madrid" va de 09:00 de hoy a 09:00 de mañana (UTC+2 en verano).
-    # En UTC eso es 07:00 hoy → 07:00 mañana, por lo que hay que pedir
-    # los partidos de HOY y MAÑANA en UTC y luego filtrar por hora Madrid.
-    now_madrid = datetime.now(timezone.utc) + timedelta(hours=2)
-    date_from = now_madrid.strftime("%Y-%m-%d")                      # hoy en Madrid
-    date_to   = (now_madrid + timedelta(days=1)).strftime("%Y-%m-%d") # mañana en Madrid
-    jornada_label = date_from  # el JSON se etiqueta con la fecha Madrid de hoy
+    # Ventana: ahora - 24h → ahora + 24h
+    now_utc     = datetime.now(timezone.utc)
+    window_start = now_utc - timedelta(hours=24)
+    window_end   = now_utc + timedelta(hours=24)
+
+    now_madrid   = now_utc + timedelta(hours=2)
+    jornada_label = now_madrid.strftime("%Y-%m-%d")
+
+    date_from = (now_utc - timedelta(days=1)).strftime("%Y-%m-%d")
+    date_to   = (now_utc + timedelta(days=1)).strftime("%Y-%m-%d")
 
     url = (
         f"https://api.football-data.org/v4/competitions/{COMPETITION}/matches"
@@ -90,17 +93,12 @@ def fetch_today() -> list:
         print(f"❌ Error HTTP {e.code} al llamar a la API.", file=sys.stderr)
         return []
 
-    # Ventana de jornada: 09:00 Madrid hoy → 09:00 Madrid mañana
-    window_start = now_madrid.replace(hour=9, minute=0, second=0, microsecond=0)
-    window_end   = window_start + timedelta(hours=24)
-
     matches = []
     for m in data.get("matches", []):
         kick_utc = datetime.fromisoformat(m["utcDate"].replace("Z", "+00:00"))
         kick_madrid = kick_utc + timedelta(hours=2)
 
-        # Solo incluir partidos dentro de la ventana 09:00 hoy → 09:00 mañana
-        if not (window_start <= kick_madrid < window_end):
+        if not (window_start <= kick_utc < window_end):
             continue
 
         home = to_es(m["homeTeam"]["name"])
