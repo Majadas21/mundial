@@ -437,6 +437,15 @@ const FLAGS = {
   'Turquía':'🇹🇷','Austria':'🇦🇹','Grecia':'🇬🇷','Rumanía':'🇷🇴',
   'Eslovaquia':'🇸🇰','Ucrania':'🇺🇦','Hungría':'🇭🇺','Escocia':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
   'Albania':'🇦🇱','Georgia':'🇬🇪','Eslovenia':'🇸🇮','República Checa':'🇨🇿',
+  'Egipto':'🇪🇬','Cabo Verde':'🇨🇻','Nueva Zelanda':'🇳🇿','Venezuela':'🇻🇪',
+  'Paraguay':'🇵🇾','Bolivia':'🇧🇴','Chile':'🇨🇱','Perú':'🇵🇪',
+  'Nigeria':'🇳🇬','Argelia':'🇩🇿','Mali':'🇲🇱','Costa de Marfil':'🇨🇮',
+  'RD Congo':'🇨🇩','Tanzania':'🇹🇿','Guinea':'🇬🇳','Burkina Faso':'🇧🇫',
+  'Sudáfrica':'🇿🇦','Zambia':'🇿🇲','Kenia':'🇰🇪','Irak':'🇮🇶',
+  'Jordania':'🇯🇴','Emiratos Árabes':'🇦🇪','Uzbekistán':'🇺🇿',
+  'Indonesia':'🇮🇩','Tailandia':'🇹🇭','China':'🇨🇳','India':'🇮🇳',
+  'Vietnam':'🇻🇳','Panamá':'🇵🇦','Jamaica':'🇯🇲','Honduras':'🇭🇳',
+  'El Salvador':'🇸🇻','Cuba':'🇨🇺','Trinidad y Tobago':'🇹🇹',
 };
 function getFlag(name) { return FLAGS[name] || '🏳️'; }
 
@@ -513,28 +522,38 @@ window.changeName = function() {
 
 // ── Load matches per day ──────────────────────────────────────────────────
 async function loadAllDays() {
-  // Intenta cargar matches.json (generado por GitHub Action para hoy)
+  // 1. Carga inmediata con datos de demo para que nunca se quede pillado
+  allDays = { ...DEMO_DAYS };
+  if (!allDays[TODAY]) allDays[TODAY] = { date: TODAY, matches: [] };
+  renderDaySelector();
+  renderAll();
+
+  // 2. Intenta cargar matches.json (generado por GitHub Action)
   try {
-    const res = await fetch('matches.json?t=' + Date.now());
+    const res = await fetch('./matches.json?t=' + Date.now());
     if (res.ok) {
       const data = await res.json();
       if (data.date && data.matches?.length) {
-        DEMO_DAYS[data.date] = data;
+        allDays[data.date] = data;
+        renderDaySelector();
+        renderAll();
       }
     }
   } catch {}
 
-  // También carga días históricos guardados en Firebase
-  const snap = await get(ref(db, 'days'));
-  const fbDays = snap.val() || {};
-
-  // Merge: Firebase tiene prioridad sobre demo para días pasados
-  allDays = { ...DEMO_DAYS, ...fbDays };
-  // Asegura que hoy siempre existe
-  if (!allDays[TODAY]) allDays[TODAY] = { date: TODAY, matches: [] };
-
-  renderDaySelector();
-  renderAll();
+  // 3. Intenta cargar días históricos de Firebase (con timeout de 5s)
+  try {
+    const fbSnap = await Promise.race([
+      get(ref(db, 'days')),
+      new Promise((_, reject) => setTimeout(() => reject('timeout'), 5000))
+    ]);
+    const fbDays = fbSnap.val() || {};
+    if (Object.keys(fbDays).length) {
+      allDays = { ...allDays, ...fbDays };
+      renderDaySelector();
+      renderAll();
+    }
+  } catch {}
 }
 
 // ── Subscribe to votes (realtime) ─────────────────────────────────────────
