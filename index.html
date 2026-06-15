@@ -4,107 +4,390 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quiniela Mundial 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: #f4f5f7; min-height: 100vh; color: #1a1a1a; }
+:root {
+  --navy: #0f172a;
+  --navy2: #1e293b;
+  --red: #e11d48;
+  --red2: #be123c;
+  --gold: #f59e0b;
+  --silver: #94a3b8;
+  --bronze: #b45309;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --success: #16a34a;
+  --info-bg: #eff6ff;
+  --info: #1d4ed8;
+  --warn-bg: #fffbeb;
+  --warn: #92400e;
+  --radius: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  header { background: #1a1a2e; color: white; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
-  header h1 { font-size: 1.2rem; font-weight: 600; }
-  .player-badge { background: #e94560; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; cursor: pointer; }
+/* ── Header ── */
+header {
+  background: var(--navy);
+  color: white;
+  padding: 0 1.5rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
+.player-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 30px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.player-pill:hover { background: rgba(255,255,255,0.18); }
+.player-avatar-sm {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700; color: white; flex-shrink: 0;
+}
 
-  .container { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem; }
+/* ── Nav tabs ── */
+.nav {
+  background: var(--navy2);
+  display: flex;
+  padding: 0 1rem;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav::-webkit-scrollbar { display: none; }
+.nav-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.nav-btn.active { color: white; border-bottom-color: var(--red); }
+.nav-btn:hover:not(.active) { color: rgba(255,255,255,0.8); }
 
-  .tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; }
-  .tab { flex: 1; padding: 0.6rem; border: none; border-radius: 8px; background: white; color: #666; cursor: pointer; font-size: 0.9rem; font-weight: 500; border: 1px solid #e0e0e0; transition: all 0.15s; }
-  .tab.active { background: #1a1a2e; color: white; border-color: #1a1a2e; }
+/* ── Day selector (scroll horizontal) ── */
+.day-scroll-wrap {
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 1rem 1rem 0;
+}
+.day-scroll-wrap::-webkit-scrollbar { display: none; }
+.day-scroll {
+  display: flex;
+  gap: 8px;
+  width: max-content;
+}
+.day-chip {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0.55rem 1rem;
+  border-radius: 30px;
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 64px;
+}
+.day-chip .day-name { font-size: 0.65rem; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.day-chip .day-num { font-size: 1.1rem; font-weight: 700; }
+.day-chip.active { background: var(--red); border-color: var(--red); color: white; }
+.day-chip.active .day-name { color: rgba(255,255,255,0.75); }
+.day-chip.today-chip { border-color: var(--red); }
+.day-chip.today-chip .day-num { color: var(--red); }
 
-  .match-card { background: white; border-radius: 12px; border: 1px solid #e8e8e8; margin-bottom: 1rem; overflow: hidden; }
-  .match-header { background: #f8f9fa; padding: 0.5rem 1rem; font-size: 0.75rem; color: #888; display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; }
-  .match-body { padding: 1rem; }
-  .match-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
-  .team { text-align: center; }
-  .team-flag { font-size: 2.5rem; line-height: 1; margin-bottom: 0.2rem; }
-  .team-name { font-size: 0.8rem; font-weight: 500; color: #444; }
-  .vs { font-size: 0.9rem; color: #bbb; font-weight: 500; }
+/* ── Container ── */
+.container { max-width: 680px; margin: 0 auto; padding: 1rem; }
 
-  .score-inputs { display: flex; align-items: center; justify-content: center; gap: 1rem; }
-  .score-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .score-group label { font-size: 0.7rem; color: #aaa; }
-  .score-input { width: 52px; height: 52px; text-align: center; font-size: 1.4rem; font-weight: 600; border: 2px solid #e0e0e0; border-radius: 10px; background: #fafafa; color: #1a1a2e; outline: none; transition: border-color 0.15s; -moz-appearance: textfield; }
-  .score-input::-webkit-inner-spin-button, .score-input::-webkit-outer-spin-button { display: none; }
-  .score-input:focus { border-color: #e94560; background: white; }
-  .score-dash { font-size: 1.5rem; color: #ccc; font-weight: 300; margin-top: 12px; }
+/* ── Match card ── */
+.match-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 1rem;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.match-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+.match-header {
+  background: var(--navy);
+  color: rgba(255,255,255,0.7);
+  padding: 0.45rem 1rem;
+  font-size: 0.72rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.match-header .stage { color: white; font-weight: 600; }
+.match-body { padding: 1.25rem 1rem 1rem; }
+.match-teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.1rem;
+}
+.team { text-align: center; }
+.team-flag { font-size: 2.8rem; line-height: 1; margin-bottom: 0.25rem; }
+.team-name { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+.vs-block { text-align: center; }
+.vs { font-size: 0.75rem; color: var(--muted); font-weight: 600; letter-spacing: 1px; }
+.live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: pulse 1s infinite; margin-right: 4px; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-  .submit-btn { width: 100%; padding: 0.65rem; background: #e94560; color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 0.75rem; transition: opacity 0.15s; }
-  .submit-btn:hover { opacity: 0.9; }
-  .submit-btn:disabled { background: #ccc; cursor: default; }
+/* ── Score inputs ── */
+.score-inputs { display: flex; align-items: center; justify-content: center; gap: 1.25rem; margin-bottom: 0.85rem; }
+.score-group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.score-group label { font-size: 0.68rem; color: var(--muted); font-weight: 500; }
+.score-input {
+  width: 58px; height: 58px;
+  text-align: center; font-size: 1.6rem; font-weight: 700;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--navy);
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  -moz-appearance: textfield;
+}
+.score-input::-webkit-inner-spin-button,
+.score-input::-webkit-outer-spin-button { display: none; }
+.score-input:focus { border-color: var(--red); background: white; }
+.score-dash { font-size: 1.8rem; color: var(--border); font-weight: 300; padding-top: 14px; }
 
-  .vote-done { text-align: center; padding: 0.5rem; font-size: 0.85rem; color: #4caf50; font-weight: 500; }
-  .vote-locked { text-align: center; padding: 0.6rem; background: #fff3cd; border-radius: 8px; font-size: 0.85rem; color: #856404; margin-top: 0.75rem; }
-  .result-reveal { text-align: center; padding: 0.6rem; background: #f0f4ff; border-radius: 8px; font-size: 0.85rem; color: #3b5bdb; margin-top: 0.75rem; }
+.submit-btn {
+  width: 100%; padding: 0.75rem;
+  background: var(--red); color: white;
+  border: none; border-radius: 10px;
+  font-size: 0.95rem; font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.15s;
+}
+.submit-btn:hover { background: var(--red2); }
+.submit-btn:active { transform: scale(0.98); }
 
-  .ranking-card { background: white; border-radius: 12px; border: 1px solid #e8e8e8; padding: 1.25rem; }
-  .ranking-row { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #f5f5f5; }
-  .ranking-row:last-child { border-bottom: none; }
-  .rank-pos { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
-  .pos-1 { background: #ffd700; color: #7a5500; }
-  .pos-2 { background: #c0c0c0; color: #444; }
-  .pos-3 { background: #cd7f32; color: #4a2400; }
-  .pos-other { background: #f0f0f0; color: #666; }
-  .rank-name { flex: 1; font-weight: 500; }
-  .rank-pts { font-weight: 700; font-size: 1.1rem; color: #1a1a2e; }
-  .rank-detail { font-size: 0.75rem; color: #aaa; text-align: right; }
+/* ── Vote status ── */
+.vote-done {
+  text-align: center; padding: 0.65rem;
+  background: #f0fdf4; border-radius: 10px;
+  font-size: 0.85rem; color: var(--success); font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.vote-locked {
+  text-align: center; padding: 0.65rem;
+  background: var(--warn-bg); border-radius: 10px;
+  font-size: 0.82rem; color: var(--warn);
+  margin-top: 0.5rem;
+}
+.result-box {
+  text-align: center; padding: 0.65rem;
+  background: var(--info-bg); border-radius: 10px;
+  font-size: 0.85rem; color: var(--info);
+  margin-top: 0.5rem;
+}
+.pts-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-weight: 700; font-size: 0.8rem;
+  margin-left: 6px;
+}
+.pts-100 { background: #fef9c3; color: #713f12; }
+.pts-75 { background: #dcfce7; color: #14532d; }
+.pts-50 { background: #dbeafe; color: #1e3a8a; }
+.pts-0  { background: #fee2e2; color: #7f1d1d; }
 
-  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
-  .modal { background: white; border-radius: 16px; padding: 2rem; max-width: 360px; width: 100%; text-align: center; }
-  .modal h2 { font-size: 1.4rem; margin-bottom: 0.5rem; }
-  .modal p { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
-  .name-input { width: 100%; padding: 0.75rem 1rem; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 1rem; outline: none; margin-bottom: 1rem; }
-  .name-input:focus { border-color: #e94560; }
-  .name-btn { width: 100%; padding: 0.75rem; background: #1a1a2e; color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+/* ── Friend votes ── */
+.friend-votes { margin-top: 0.85rem; border-top: 1px solid var(--border); padding-top: 0.75rem; }
+.friend-votes-title { font-size: 0.7rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.friend-vote-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f8fafc;
+}
+.friend-vote-row:last-child { border-bottom: none; }
+.fv-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700; color: white; flex-shrink: 0;
+}
+.fv-name { flex: 1; font-size: 0.82rem; font-weight: 500; }
+.fv-score { font-size: 0.82rem; font-weight: 700; color: var(--navy); }
 
-  .empty-state { text-align: center; padding: 3rem 1rem; color: #aaa; }
-  .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+/* ── Ranking ── */
+.ranking-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+.ranking-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid #f8fafc;
+  transition: background 0.1s;
+}
+.ranking-row:last-child { border-bottom: none; }
+.ranking-row:hover { background: #f8fafc; }
+.rank-pos {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700; flex-shrink: 0;
+}
+.pos-1 { background: #fef9c3; color: #854d0e; font-size: 1.1rem; }
+.pos-2 { background: #f1f5f9; color: #475569; font-size: 1.1rem; }
+.pos-3 { background: #fff7ed; color: #9a3412; font-size: 1.1rem; }
+.pos-other { background: var(--bg); color: var(--muted); font-size: 0.8rem; }
+.rank-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.82rem; font-weight: 700; color: white; flex-shrink: 0;
+}
+.rank-info { flex: 1; min-width: 0; }
+.rank-name { font-weight: 600; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rank-sub { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+.rank-pts { font-weight: 800; font-size: 1.15rem; color: var(--navy); white-space: nowrap; }
+.you-tag { font-size: 0.65rem; color: var(--red); font-weight: 700; margin-left: 5px; background: #fff1f2; padding: 1px 6px; border-radius: 10px; }
 
-  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: #1a1a2e; color: white; padding: 0.75rem 1.5rem; border-radius: 30px; font-size: 0.9rem; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-  .toast.show { opacity: 1; }
+/* ── Chart ── */
+.chart-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 1.1rem;
+  margin-bottom: 1rem;
+}
+.chart-title { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
 
-  .friend-votes { margin-top: 0.75rem; border-top: 1px solid #f0f0f0; padding-top: 0.75rem; }
-  .friend-vote-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: #777; padding: 2px 0; }
-  .friend-vote-row .score { font-weight: 600; color: #444; }
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 1rem;
+  backdrop-filter: blur(3px);
+}
+.modal {
+  background: white; border-radius: 20px;
+  padding: 2rem; max-width: 360px; width: 100%; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.modal-icon { font-size: 3.5rem; margin-bottom: 0.5rem; }
+.modal h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.4rem; }
+.modal p { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.5rem; line-height: 1.5; }
+.name-input {
+  width: 100%; padding: 0.8rem 1rem;
+  border: 2px solid var(--border); border-radius: 12px;
+  font-size: 1rem; outline: none; margin-bottom: 0.75rem;
+  transition: border-color 0.15s;
+}
+.name-input:focus { border-color: var(--red); }
+.name-btn {
+  width: 100%; padding: 0.8rem;
+  background: var(--navy); color: white;
+  border: none; border-radius: 12px;
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  transition: background 0.15s;
+}
+.name-btn:hover { background: var(--navy2); }
 
-  .spinner { text-align: center; padding: 3rem; color: #aaa; font-size: 0.9rem; }
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 1.5rem; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--navy); color: white;
+  padding: 0.75rem 1.5rem; border-radius: 30px;
+  font-size: 0.88rem; z-index: 999;
+  opacity: 0; transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Confetti ── */
+.confetti-wrap {
+  position: fixed; inset: 0; pointer-events: none; z-index: 998; overflow: hidden;
+}
+.confetto {
+  position: absolute; top: -10px;
+  width: 8px; height: 8px; border-radius: 2px;
+  animation: fall linear forwards;
+}
+@keyframes fall {
+  to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* ── Empty / spinner ── */
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+.empty-state .eicon { font-size: 3rem; margin-bottom: 0.75rem; }
+.spinner { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.9rem; }
+.section-label { font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin: 1.25rem 0 0.6rem; }
 </style>
 </head>
 <body>
 
+<!-- Name modal -->
 <div id="nameModal" class="modal-overlay">
   <div class="modal">
-    <div style="font-size:3rem;margin-bottom:0.5rem">⚽</div>
+    <div class="modal-icon">⚽</div>
     <h2>Quiniela Mundial 2026</h2>
-    <p>¿Cómo te llamas? Te recordaremos para la próxima vez.</p>
+    <p>¿Cómo te llamas? Te recordaremos para la próxima vez que entres.</p>
     <input id="nameInput" class="name-input" type="text" placeholder="Tu nombre..." maxlength="20" />
     <button class="name-btn" onclick="saveName()">Entrar al grupo</button>
   </div>
 </div>
 
+<!-- Confetti container -->
+<div class="confetti-wrap" id="confettiWrap"></div>
+
+<!-- Header -->
 <header>
   <h1>⚽ Mundial 2026</h1>
-  <div class="player-badge" id="playerBadge" onclick="changeName()">...</div>
+  <div class="player-pill" id="playerPill" onclick="changeName()">
+    <div class="player-avatar-sm" id="headerAvatar"></div>
+    <span id="headerName">...</span>
+  </div>
 </header>
 
+<!-- Nav -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="showSection('matches')" id="nav-matches">Partidos</button>
+  <button class="nav-btn" onclick="showSection('ranking')" id="nav-ranking">🏆 Clasificación</button>
+</nav>
+
+<!-- Day selector -->
+<div class="day-scroll-wrap" id="dayScrollWrap" style="display:none">
+  <div class="day-scroll" id="dayScroll"></div>
+</div>
+
+<!-- Main content -->
 <div class="container">
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('today')" id="tab-today">Partidos de hoy</button>
-    <button class="tab" onclick="showTab('ranking')" id="tab-ranking">🏆 Clasificación</button>
-  </div>
-  <div id="view-today"><div class="spinner">Cargando...</div></div>
-  <div id="view-ranking" style="display:none"></div>
+  <div id="section-matches"><div class="spinner">Cargando partidos...</div></div>
+  <div id="section-ranking" style="display:none"></div>
 </div>
 
 <div id="toast" class="toast"></div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -118,10 +401,29 @@ const firebaseConfig = {
   messagingSenderId: "356216751389",
   appId: "1:356216751389:web:8f153ce31ac45514d08df4"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// ── Paleta de colores por jugador ─────────────────────────────────────────
+const PALETTE = [
+  '#e11d48','#7c3aed','#0284c7','#16a34a','#d97706',
+  '#0891b2','#be185d','#4f46e5','#15803d','#b45309',
+];
+const playerColors = {};
+let colorIdx = 0;
+function getPlayerColor(name) {
+  if (!playerColors[name]) playerColors[name] = PALETTE[colorIdx++ % PALETTE.length];
+  return playerColors[name];
+}
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+}
+function avatar(name, size=36) {
+  const c = getPlayerColor(name);
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${c};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.33)}px;font-weight:700;color:white;flex-shrink:0">${initials(name)}</div>`;
+}
+
+// ── Flags ─────────────────────────────────────────────────────────────────
 const FLAGS = {
   'España':'🇪🇸','Alemania':'🇩🇪','Francia':'🇫🇷','Brasil':'🇧🇷',
   'Argentina':'🇦🇷','Portugal':'🇵🇹','Inglaterra':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Italia':'🇮🇹',
@@ -136,31 +438,55 @@ const FLAGS = {
   'Eslovaquia':'🇸🇰','Ucrania':'🇺🇦','Hungría':'🇭🇺','Escocia':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
   'Albania':'🇦🇱','Georgia':'🇬🇪','Eslovenia':'🇸🇮','República Checa':'🇨🇿',
 };
-
-const DEMO_MATCHES = [
-  { id: 'm1', home: 'España', away: 'Alemania', time: '15:00', group: 'Grupo A' },
-  { id: 'm2', home: 'Francia', away: 'Brasil', time: '18:00', group: 'Grupo B' },
-  { id: 'm3', home: 'Argentina', away: 'Portugal', time: '21:00', group: 'Grupo C' },
-];
-
 function getFlag(name) { return FLAGS[name] || '🏳️'; }
-function safeKey(name) { return name.replace(/[.#$/\[\]]/g, '_'); }
 
+// ── Demo data ─────────────────────────────────────────────────────────────
+const TODAY = new Date().toISOString().slice(0,10);
+function demoDate(offset) {
+  const d = new Date(); d.setDate(d.getDate() + offset);
+  return d.toISOString().slice(0,10);
+}
+const DEMO_DAYS = {
+  [demoDate(-2)]: { date: demoDate(-2), matches: [
+    { id:'h1', home:'España', away:'Alemania', time:'15:00', group:'Grupo A', result:{home:2,away:1} },
+    { id:'h2', home:'Francia', away:'Brasil', time:'21:00', group:'Grupo B', result:{home:1,away:1} },
+  ]},
+  [demoDate(-1)]: { date: demoDate(-1), matches: [
+    { id:'h3', home:'Argentina', away:'Portugal', time:'18:00', group:'Grupo C', result:{home:3,away:0} },
+  ]},
+  [TODAY]: { date: TODAY, matches: [
+    { id:'m1', home:'España', away:'Alemania', time:'15:00', group:'Grupo A' },
+    { id:'m2', home:'Francia', away:'Brasil', time:'18:00', group:'Grupo B' },
+    { id:'m3', home:'Argentina', away:'Portugal', time:'21:00', group:'Grupo C' },
+  ]},
+};
+
+// ── State ─────────────────────────────────────────────────────────────────
 let currentPlayer = localStorage.getItem('playerName') || '';
-let matches = [];
-let allVotesCache = {};  // { matchId: { playerName: { home, away } } }
+let allDays = {};        // { date: { date, matches[] } }
+let allVotes = {};       // { matchId: { playerKey: { home, away, name, ts } } }
+let selectedDate = TODAY;
+let rankChart = null;
 
-// ── Nombre del jugador ────────────────────────────────────────────────────
+function safeKey(name) { return name.replace(/[.#$\/\[\]]/g,'_'); }
 
+// ── Init ──────────────────────────────────────────────────────────────────
 function init() {
   if (!currentPlayer) {
     document.getElementById('nameModal').style.display = 'flex';
   } else {
     document.getElementById('nameModal').style.display = 'none';
-    document.getElementById('playerBadge').textContent = '👤 ' + currentPlayer;
-    loadMatches();
-    subscribeToVotes();
+    setHeaderPlayer();
+    loadAllDays();
+    subscribeVotes();
   }
+}
+
+function setHeaderPlayer() {
+  const c = getPlayerColor(currentPlayer);
+  document.getElementById('headerAvatar').style.background = c;
+  document.getElementById('headerAvatar').textContent = initials(currentPlayer);
+  document.getElementById('headerName').textContent = currentPlayer;
 }
 
 window.saveName = function() {
@@ -169,78 +495,62 @@ window.saveName = function() {
   currentPlayer = name;
   localStorage.setItem('playerName', name);
   document.getElementById('nameModal').style.display = 'none';
-  document.getElementById('playerBadge').textContent = '👤 ' + name;
-  loadMatches();
-  subscribeToVotes();
+  setHeaderPlayer();
+  loadAllDays();
+  subscribeVotes();
 };
+document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') saveName(); });
 
 window.changeName = function() {
-  if (confirm('¿Quieres cambiar tu nombre? Esto NO borra tus votos previos.')) {
-    const name = prompt('Nuevo nombre:', currentPlayer);
-    if (name && name.trim()) {
-      currentPlayer = name.trim();
-      localStorage.setItem('playerName', currentPlayer);
-      document.getElementById('playerBadge').textContent = '👤 ' + currentPlayer;
-      renderAll();
-    }
+  const name = prompt('Nuevo nombre (tus votos se mantienen):', currentPlayer);
+  if (name && name.trim()) {
+    currentPlayer = name.trim();
+    localStorage.setItem('playerName', currentPlayer);
+    setHeaderPlayer();
+    renderAll();
   }
 };
 
-document.getElementById('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
-
-// ── Partidos (matches.json generado por GitHub Action) ────────────────────
-
-async function loadMatches() {
+// ── Load matches per day ──────────────────────────────────────────────────
+async function loadAllDays() {
+  // Intenta cargar matches.json (generado por GitHub Action para hoy)
   try {
     const res = await fetch('matches.json?t=' + Date.now());
     if (res.ok) {
       const data = await res.json();
-      const today = new Date().toISOString().slice(0, 10);
-      matches = (data.date === today && data.matches?.length) ? data.matches : DEMO_MATCHES;
-    } else {
-      matches = DEMO_MATCHES;
+      if (data.date && data.matches?.length) {
+        DEMO_DAYS[data.date] = data;
+      }
     }
-  } catch {
-    matches = DEMO_MATCHES;
-  }
+  } catch {}
+
+  // También carga días históricos guardados en Firebase
+  const snap = await get(ref(db, 'days'));
+  const fbDays = snap.val() || {};
+
+  // Merge: Firebase tiene prioridad sobre demo para días pasados
+  allDays = { ...DEMO_DAYS, ...fbDays };
+  // Asegura que hoy siempre existe
+  if (!allDays[TODAY]) allDays[TODAY] = { date: TODAY, matches: [] };
+
+  renderDaySelector();
   renderAll();
 }
 
-// ── Votos en Firebase (tiempo real) ──────────────────────────────────────
-
-function subscribeToVotes() {
-  // Escucha en tiempo real todos los votos — el ranking se actualiza solo
-  onValue(ref(db, 'votes'), snapshot => {
-    allVotesCache = snapshot.val() || {};
+// ── Subscribe to votes (realtime) ─────────────────────────────────────────
+function subscribeVotes() {
+  onValue(ref(db, 'votes'), snap => {
+    allVotes = snap.val() || {};
     renderAll();
   });
 }
 
-function getMyVote(matchId) {
-  return allVotesCache[matchId]?.[safeKey(currentPlayer)];
+// ── Helpers ───────────────────────────────────────────────────────────────
+function isStarted(timeStr) {
+  const now = new Date();
+  const [h,m] = timeStr.split(':').map(Number);
+  return now >= new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
 }
-
-function getAllVotes(matchId) {
-  return allVotesCache[matchId] || {};
-}
-
-window.submitVote = async function(matchId) {
-  const h = parseInt(document.getElementById('h_' + matchId).value);
-  const a = parseInt(document.getElementById('a_' + matchId).value);
-  if (isNaN(h) || isNaN(a) || h < 0 || a < 0) { showToast('Introduce un resultado válido'); return; }
-
-  const playerKey = safeKey(currentPlayer);
-  const voteRef = ref(db, `votes/${matchId}/${playerKey}`);
-
-  // Comprobar que no existe ya un voto (doble protección además de las reglas)
-  const existing = await get(voteRef);
-  if (existing.exists()) { showToast('Ya has votado este partido'); return; }
-
-  await set(voteRef, { home: h, away: a, ts: Date.now(), name: currentPlayer });
-  showToast('¡Pronóstico guardado! 🎯');
-};
-
-// ── Puntuación ────────────────────────────────────────────────────────────
 
 function computePoints(vote, result) {
   if (!vote || !result) return null;
@@ -251,138 +561,295 @@ function computePoints(vote, result) {
   return pts;
 }
 
-function isMatchStarted(timeStr) {
-  const now = new Date();
-  const [h, m] = timeStr.split(':').map(Number);
-  const matchTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
-  return now >= matchTime;
+function ptsBadge(pts) {
+  if (pts === null) return '';
+  const cls = pts===100?'pts-100':pts>=75?'pts-75':pts>=50?'pts-50':'pts-0';
+  return `<span class="pts-badge ${cls}">${pts} pts</span>`;
 }
 
-// ── Render ────────────────────────────────────────────────────────────────
+// ── Day selector ─────────────────────────────────────────────────────────
+function renderDaySelector() {
+  const wrap = document.getElementById('dayScrollWrap');
+  const scroll = document.getElementById('dayScroll');
+  const days = Object.keys(allDays).sort();
+  if (!days.length) { wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
 
+  const DAYS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  scroll.innerHTML = days.map(d => {
+    const dt = new Date(d + 'T12:00:00');
+    const isToday = d === TODAY;
+    const isActive = d === selectedDate;
+    return `<div class="day-chip${isActive?' active':''}${isToday&&!isActive?' today-chip':''}" onclick="selectDay('${d}')">
+      <span class="day-name">${DAYS_ES[dt.getDay()]}</span>
+      <span class="day-num">${dt.getDate()}</span>
+    </div>`;
+  }).join('');
+
+  // Scroll al día activo
+  setTimeout(() => {
+    const active = scroll.querySelector('.day-chip.active');
+    if (active) active.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+  }, 100);
+}
+
+window.selectDay = function(date) {
+  selectedDate = date;
+  renderDaySelector();
+  renderMatches();
+};
+
+// ── Render ────────────────────────────────────────────────────────────────
 function renderAll() {
-  renderToday();
+  renderMatches();
   renderRanking();
 }
 
-function renderToday() {
-  const el = document.getElementById('view-today');
+function renderMatches() {
+  const el = document.getElementById('section-matches');
+  const dayData = allDays[selectedDate];
+  const matches = dayData?.matches || [];
+
   if (!matches.length) {
-    el.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>No hay partidos hoy.</p></div>';
+    el.innerHTML = '<div class="empty-state"><div class="eicon">📅</div><p>No hay partidos este día.</p></div>';
     return;
   }
 
   el.innerHTML = matches.map(match => {
-    const started = isMatchStarted(match.time);
-    const myVote = getMyVote(match.id);
-    const votes = getAllVotes(match.id);
+    const started = isStarted(match.time);
+    const votes = allVotes[match.id] || {};
+    const myVoteEntry = Object.values(votes).find(v => v.name === currentPlayer);
     const result = match.result;
 
+    // Input section
     let inputSection = '';
-    if (myVote) {
-      inputSection = `<div class="vote-done">✅ Tu pronóstico: ${myVote.home} – ${myVote.away}</div>`;
+    if (myVoteEntry) {
+      inputSection = `<div class="vote-done">✅ Tu pronóstico: ${myVoteEntry.home} – ${myVoteEntry.away}</div>`;
       if (result) {
-        const pts = computePoints(myVote, result);
-        inputSection += `<div class="result-reveal">Resultado final: ${result.home} – ${result.away} · <strong>${pts} pts</strong></div>`;
+        const pts = computePoints(myVoteEntry, result);
+        inputSection += `<div class="result-box">Resultado final: <strong>${result.home} – ${result.away}</strong>${ptsBadge(pts)}</div>`;
       } else if (started) {
-        inputSection += `<div class="vote-locked">⏳ Partido en curso — resultado pendiente</div>`;
+        inputSection += `<div class="vote-locked"><span class="live-dot"></span>Partido en juego — resultado pendiente</div>`;
       }
-    } else if (!started) {
+    } else if (!started && selectedDate === TODAY) {
       inputSection = `
         <div class="score-inputs">
           <div class="score-group">
             <label>${match.home}</label>
-            <input class="score-input" type="number" min="0" max="20" id="h_${match.id}" placeholder="0" />
+            <input class="score-input" type="number" min="0" max="20" id="h_${match.id}" placeholder="0">
           </div>
           <div class="score-dash">–</div>
           <div class="score-group">
             <label>${match.away}</label>
-            <input class="score-input" type="number" min="0" max="20" id="a_${match.id}" placeholder="0" />
+            <input class="score-input" type="number" min="0" max="20" id="a_${match.id}" placeholder="0">
           </div>
         </div>
         <button class="submit-btn" onclick="submitVote('${match.id}')">Guardar pronóstico</button>`;
+    } else if (!started) {
+      inputSection = `<div class="vote-locked">📋 Partido histórico — votación cerrada</div>`;
     } else {
       inputSection = `<div class="vote-locked">🔒 Partido comenzado — ya no se puede votar</div>`;
     }
 
-    // Votos de amigos: solo visibles cuando el partido ha empezado
-    let friendVotesHtml = '';
+    // Friend votes (solo visibles si el partido empezó)
+    let friendVotes = '';
     if (started) {
       const others = Object.values(votes).filter(v => v.name !== currentPlayer);
       if (others.length) {
-        friendVotesHtml = `<div class="friend-votes"><p style="font-size:0.75rem;color:#aaa;margin-bottom:4px">Pronósticos de amigos</p>` +
+        friendVotes = `<div class="friend-votes">
+          <div class="friend-votes-title">Pronósticos</div>` +
           others.map(v => {
             const pts = result ? computePoints(v, result) : null;
-            return `<div class="friend-vote-row"><span>${v.name}</span><span class="score">${v.home} – ${v.away}${pts !== null ? ' · ' + pts + ' pts' : ''}</span></div>`;
+            return `<div class="friend-vote-row">
+              ${avatar(v.name, 26)}
+              <span class="fv-name">${v.name}</span>
+              <span class="fv-score">${v.home} – ${v.away}${pts !== null ? ' · ' + ptsBadge(pts) : ''}</span>
+            </div>`;
           }).join('') + `</div>`;
       }
     }
 
-    return `
-    <div class="match-card">
-      <div class="match-header"><span>${match.group || ''}</span><span>⏰ ${match.time}</span></div>
+    const liveIndicator = started && !result
+      ? `<span style="font-size:0.7rem;color:#ef4444"><span class="live-dot"></span>En juego</span>`
+      : result ? `<span style="font-size:0.7rem;color:#16a34a;font-weight:600">FIN ${result.home}–${result.away}</span>` : '';
+
+    return `<div class="match-card">
+      <div class="match-header">
+        <span class="stage">${match.group || ''}</span>
+        <span style="display:flex;align-items:center;gap:8px">${liveIndicator}<span>⏰ ${match.time}</span></span>
+      </div>
       <div class="match-body">
         <div class="match-teams">
           <div class="team"><div class="team-flag">${getFlag(match.home)}</div><div class="team-name">${match.home}</div></div>
-          <div class="vs">vs</div>
+          <div class="vs-block"><div class="vs">VS</div></div>
           <div class="team"><div class="team-flag">${getFlag(match.away)}</div><div class="team-name">${match.away}</div></div>
         </div>
         ${inputSection}
-        ${friendVotesHtml}
+        ${friendVotes}
       </div>
     </div>`;
   }).join('');
 }
 
-function renderRanking() {
-  const el = document.getElementById('view-ranking');
-  const players = {};
+window.submitVote = async function(matchId) {
+  const h = parseInt(document.getElementById('h_' + matchId).value);
+  const a = parseInt(document.getElementById('a_' + matchId).value);
+  if (isNaN(h)||isNaN(a)||h<0||a<0) { showToast('Introduce un resultado válido'); return; }
 
-  matches.forEach(match => {
-    const votes = getAllVotes(match.id);
-    const result = match.result;
-    Object.values(votes).forEach(vote => {
-      const name = vote.name || 'Desconocido';
-      if (!players[name]) players[name] = { pts: 0, exact: 0, correct: 0, total: 0 };
-      players[name].total++;
-      if (result) {
-        const pts = computePoints(vote, result);
-        players[name].pts += pts;
-        if (pts === 100) players[name].exact++;
-        if (pts >= 50) players[name].correct++;
-      }
+  const playerKey = safeKey(currentPlayer);
+  const voteRef = ref(db, `votes/${matchId}/${playerKey}`);
+  const existing = await get(voteRef);
+  if (existing.exists()) { showToast('Ya has votado este partido'); return; }
+
+  await set(voteRef, { home: h, away: a, ts: Date.now(), name: currentPlayer });
+
+  // Animación de celebración al guardar
+  showToast('¡Pronóstico guardado! 🎯');
+  animateSave();
+};
+
+// ── Ranking ───────────────────────────────────────────────────────────────
+function renderRanking() {
+  const el = document.getElementById('section-ranking');
+
+  // Acumular puntos por jugador día a día
+  const players = {};
+  const allMatchesList = Object.values(allDays)
+    .sort((a,b) => a.date.localeCompare(b.date))
+    .flatMap(d => d.matches || []);
+
+  // Orden de días para el gráfico
+  const sortedDays = Object.keys(allDays).sort();
+
+  // Puntos acumulados por jugador por día (para el gráfico)
+  const playersByDay = {}; // { playerName: [pts acumulados por día] }
+
+  sortedDays.forEach((date, dayIdx) => {
+    const dayMatches = allDays[date]?.matches || [];
+    dayMatches.forEach(match => {
+      const votes = allVotes[match.id] || {};
+      const result = match.result;
+      Object.values(votes).forEach(vote => {
+        const name = vote.name || '?';
+        if (!players[name]) players[name] = { pts:0, exact:0, correct:0, total:0 };
+        if (!playersByDay[name]) playersByDay[name] = Array(sortedDays.length).fill(0);
+        players[name].total++;
+        if (result) {
+          const pts = computePoints(vote, result);
+          players[name].pts += pts;
+          if (pts===100) players[name].exact++;
+          if (pts>=50) players[name].correct++;
+          // Acumular para gráfico
+          for (let i = dayIdx; i < sortedDays.length; i++) {
+            playersByDay[name][i] += pts;
+          }
+        }
+      });
     });
   });
 
-  const sorted = Object.entries(players).sort((a, b) => b[1].pts - a[1].pts);
+  const sorted = Object.entries(players).sort((a,b) => b[1].pts - a[1].pts);
 
   if (!sorted.length) {
-    el.innerHTML = '<div class="empty-state"><div class="icon">🏆</div><p>Aún no hay votos. ¡Sé el primero!</p></div>';
+    el.innerHTML = '<div class="empty-state"><div class="eicon">🏆</div><p>Aún no hay votos. ¡Sé el primero!</p></div>';
     return;
   }
 
+  const posEmoji = i => ['🥇','🥈','🥉'][i] || (i+1);
   const posClass = i => ['pos-1','pos-2','pos-3'][i] || 'pos-other';
-  const posEmoji = i => ['🥇','🥈','🥉'][i] || (i + 1);
 
-  el.innerHTML = `<div class="ranking-card">` +
+  const rankingHtml = `<div class="ranking-card">` +
     sorted.map(([name, s], i) => `
     <div class="ranking-row">
       <div class="rank-pos ${posClass(i)}">${posEmoji(i)}</div>
-      <div class="rank-name">${name}${name === currentPlayer ? ' <span style="font-size:0.7rem;color:#e94560">tú</span>' : ''}</div>
-      <div style="text-align:right">
-        <div class="rank-pts">${s.pts} pts</div>
-        <div class="rank-detail">${s.exact} exactos · ${s.correct}/${s.total} ganadores</div>
+      ${avatar(name, 36)}
+      <div class="rank-info">
+        <div class="rank-name">${name}${name===currentPlayer?'<span class="you-tag">tú</span>':''}</div>
+        <div class="rank-sub">${s.exact} exactos · ${s.correct}/${s.total} ganadores</div>
       </div>
+      <div class="rank-pts">${s.pts} pts</div>
     </div>`).join('') + `</div>
-    <p style="text-align:center;font-size:0.75rem;color:#bbb;margin-top:1rem">50 pts ganador/empate · +25 goles local · +25 goles visitante</p>`;
+    <p style="text-align:center;font-size:0.7rem;color:var(--muted);margin-top:0.5rem;margin-bottom:1rem">
+      50 pts ganador · +25 goles local · +25 goles visitante
+    </p>`;
+
+  // Gráfico de evolución
+  const chartHtml = `<div class="chart-card">
+    <div class="chart-title">Evolución del ranking</div>
+    <canvas id="rankChart" height="180"></canvas>
+  </div>`;
+
+  el.innerHTML = chartHtml + rankingHtml;
+
+  // Renderizar gráfico
+  const ctx = document.getElementById('rankChart').getContext('2d');
+  if (rankChart) rankChart.destroy();
+
+  const DAYS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const labels = sortedDays.map(d => {
+    const dt = new Date(d + 'T12:00:00');
+    return DAYS_ES[dt.getDay()] + ' ' + dt.getDate();
+  });
+
+  rankChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: Object.entries(playersByDay).map(([name, data]) => ({
+        label: name,
+        data,
+        borderColor: getPlayerColor(name),
+        backgroundColor: getPlayerColor(name) + '18',
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointBackgroundColor: getPlayerColor(name),
+        tension: 0.35,
+        fill: false,
+      }))
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
 }
 
-window.showTab = function(tab) {
-  document.getElementById('view-today').style.display = tab === 'today' ? 'block' : 'none';
-  document.getElementById('view-ranking').style.display = tab === 'ranking' ? 'block' : 'none';
-  document.getElementById('tab-today').className = 'tab' + (tab === 'today' ? ' active' : '');
-  document.getElementById('tab-ranking').className = 'tab' + (tab === 'ranking' ? ' active' : '');
+// ── Navigation ────────────────────────────────────────────────────────────
+window.showSection = function(section) {
+  ['matches','ranking'].forEach(s => {
+    document.getElementById('section-' + s).style.display = s===section ? 'block' : 'none';
+    document.getElementById('nav-' + s).className = 'nav-btn' + (s===section ? ' active' : '');
+  });
+  document.getElementById('dayScrollWrap').style.display = section==='matches' ? 'block' : 'none';
 };
+
+// ── Animaciones ───────────────────────────────────────────────────────────
+function animateSave() {
+  const wrap = document.getElementById('confettiWrap');
+  const colors = ['#e11d48','#f59e0b','#16a34a','#0284c7','#7c3aed','#fff'];
+  for (let i = 0; i < 40; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetto';
+    c.style.cssText = `
+      left:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${0.8 + Math.random()*0.8}s;
+      animation-delay:${Math.random()*0.3}s;
+      transform:rotate(${Math.random()*360}deg);
+      width:${6+Math.random()*6}px;
+      height:${6+Math.random()*6}px;
+    `;
+    wrap.appendChild(c);
+    setTimeout(() => c.remove(), 1500);
+  }
+}
 
 function showToast(msg) {
   const t = document.getElementById('toast');
