@@ -4,7 +4,7 @@ on:
   schedule:
     # Se ejecuta cada día a las 09:00 hora española (07:00 UTC en verano CEST)
     # Los partidos en EEUU/México terminan de madrugada en España, así que a las 9am ya están todos finalizados
-    - cron: '0 7 * * *'
+    - cron: '0 5 * * *'
   # También se puede lanzar manualmente desde la pestaña Actions de GitHub
   workflow_dispatch:
 
