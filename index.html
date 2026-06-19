@@ -90,7 +90,11 @@ header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
 /* ── Day selector (scroll horizontal) ── */
 .day-scroll-wrap {
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;   /* momentum scroll en iOS */
+  overscroll-behavior-x: contain;      /* no arrastra la página al llegar al borde */
+  scroll-snap-type: x proximity;       /* engancha suavemente a cada fecha */
   padding: 1rem 1rem 0;
 }
 .day-scroll-wrap::-webkit-scrollbar { display: none; }
@@ -101,6 +105,8 @@ header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
 }
 .day-chip {
   display: flex; flex-direction: column; align-items: center;
+  flex: 0 0 auto;                       /* nunca se encoge: siempre se desplaza */
+  scroll-snap-align: center;
   padding: 0.55rem 1rem;
   border-radius: 30px;
   border: 1.5px solid var(--border);
@@ -610,11 +616,17 @@ function renderDaySelector() {
     </div>`;
   }).join('');
 
-  // Scroll al día activo
+  // Centrar el día activo SOLO dentro de la tira (no mover la página entera,
+  // que es lo que hacía scrollIntoView y sacaba el contenido de la pantalla).
+  // Posicionamiento instantáneo (scrollLeft): 'smooth' se cancela al combinarse
+  // con scroll-snap y el día activo no llegaba a centrarse.
   setTimeout(() => {
     const active = scroll.querySelector('.day-chip.active');
-    if (active) active.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
-  }, 100);
+    if (active) {
+      const target = active.offsetLeft - (wrap.clientWidth - active.offsetWidth) / 2;
+      wrap.scrollLeft = Math.max(0, target);
+    }
+  }, 50);
 }
 
 window.selectDay = function(date) {
