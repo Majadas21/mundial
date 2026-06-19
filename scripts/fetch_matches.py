@@ -45,6 +45,11 @@ TEAM_ES = {
     "China PR": "China", "India": "India", "Vietnam": "Vietnam",
     "Panama": "Panamá", "Jamaica": "Jamaica", "Honduras": "Honduras",
     "El Salvador": "El Salvador", "Cuba": "Cuba", "Trinidad and Tobago": "Trinidad y Tobago",
+    # Variantes de nombre que devuelve la API y no se traducían (faltaba la bandera)
+    "South Korea": "Corea del Sur", "Czechia": "República Checa",
+    "Congo DR": "RD Congo", "DR Congo": "RD Congo",
+    "Haiti": "Haití", "Curacao": "Curazao", "Cape Verde": "Cabo Verde",
+    "Bosnia and Herzegovina": "Bosnia y Herzegovina", "Bosnia-Herzegovina": "Bosnia y Herzegovina",
 }
 
 def to_es(name: str) -> str:
