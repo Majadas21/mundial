@@ -716,11 +716,13 @@ function renderGroups() {
   const el = document.getElementById('section-groups');
   const allMatches = Object.values(allDays).flatMap(d => d.matches || []);
 
-  // Acumular estadísticas por grupo y equipo
+  // Acumular estadísticas por grupo y equipo.
+  // SOLO fase de grupos: los partidos eliminatorios (octavos, cuartos…) llegan
+  // con otro 'group' (LAST_16, etc.) y no deben sumar a la clasificación.
   const groups = {};
   allMatches.forEach(m => {
     const g = m.group;
-    if (!g) return;
+    if (!g || !g.startsWith('Grupo ')) return;
     if (!groups[g]) groups[g] = {};
     [m.home, m.away].forEach(t => {
       if (!groups[g][t]) groups[g][t] = { team: t, pj:0, g:0, e:0, p:0, gf:0, gc:0, pts:0 };
