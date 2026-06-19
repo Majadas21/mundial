@@ -121,17 +121,18 @@ def fetch_matches() -> dict:
         print("⚠️  FOOTBALL_TOKEN no configurado — no se piden partidos.")
         return {}
 
-    now_utc = datetime.now(timezone.utc)
+    # Naive (sin tz): solo se usan para construir cadenas YYYY-MM-DD
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     env_from = os.environ.get("DATE_FROM", "").strip()
     env_to = os.environ.get("DATE_TO", "").strip()
 
     if env_from:
         start = datetime.strptime(env_from, "%Y-%m-%d")
-        end = datetime.strptime(env_to, "%Y-%m-%d") if env_to else now_utc
+        end = datetime.strptime(env_to, "%Y-%m-%d") if env_to else now
         print(f"🗓️  Backfill: {start:%Y-%m-%d} → {end:%Y-%m-%d}")
     else:
-        start = now_utc - timedelta(days=1)
-        end = now_utc + timedelta(days=1)
+        start = now - timedelta(days=1)
+        end = now + timedelta(days=1)
 
     fetched = {}
     for d_from, d_to in daterange_chunks(start, end):
