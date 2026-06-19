@@ -285,6 +285,7 @@ header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
   margin-bottom: 1rem;
 }
 .chart-title { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.chart-box { position: relative; height: 220px; }
 
 /* ── Modal ── */
 .modal-overlay {
@@ -411,22 +412,55 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 // ── Paleta de colores por jugador ─────────────────────────────────────────
+// Tonos bien separados en el círculo cromático (rojo→azul→ámbar→verde→…) para
+// que dos jugadores consecutivos nunca se confundan. El texto del avatar se
+// calcula según el color (claro u oscuro), así pueden usarse tonos vivos.
 const PALETTE = [
-  '#e11d48','#7c3aed','#0284c7','#16a34a','#d97706',
-  '#0891b2','#be185d','#4f46e5','#15803d','#b45309',
+  '#e11d48', // rojo
+  '#3b82f6', // azul
+  '#f59e0b', // ámbar
+  '#16a34a', // verde
+  '#a855f7', // morado
+  '#ec4899', // rosa
+  '#06b6d4', // cian
+  '#f97316', // naranja
+  '#84cc16', // lima
+  '#6366f1', // índigo
+  '#14b8a6', // teal
+  '#eab308', // amarillo
+  '#ef4444', // rojo claro
+  '#8b5cf6', // violeta
+  '#22c55e', // verde claro
+  '#d946ef', // fucsia
 ];
 const playerColors = {};
-let colorIdx = 0;
 function getPlayerColor(name) {
-  if (!playerColors[name]) playerColors[name] = PALETTE[colorIdx++ % PALETTE.length];
+  if (!(name in playerColors)) {
+    const idx = Object.keys(playerColors).length;
+    // Hasta 16 jugadores se usa la paleta; a partir de ahí, ángulo áureo
+    // (137.5°) que reparte tonos nuevos siempre separados de los anteriores.
+    playerColors[name] = idx < PALETTE.length
+      ? PALETTE[idx]
+      : `hsl(${Math.round((idx * 137.508) % 360)} 70% 45%)`;
+  }
   return playerColors[name];
+}
+// Devuelve texto blanco u oscuro según la luminancia del fondo (legibilidad)
+function textOn(bg) {
+  if (bg[0] === '#') {
+    const h = bg.slice(1);
+    const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
+    return (0.299*r + 0.587*g + 0.114*b) < 150 ? '#fff' : '#1e293b';
+  }
+  const m = bg.match(/hsl\(\s*[\d.]+[ ,]+[\d.]+%[ ,]+([\d.]+)%/);
+  return (m ? parseFloat(m[1]) : 50) < 60 ? '#fff' : '#1e293b';
 }
 function initials(name) {
   return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
 }
 function avatar(name, size=36) {
   const c = getPlayerColor(name);
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${c};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.33)}px;font-weight:700;color:white;flex-shrink:0">${initials(name)}</div>`;
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${c};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.33)}px;font-weight:700;color:${textOn(c)};flex-shrink:0">${initials(name)}</div>`;
 }
 
 // ── Flags ─────────────────────────────────────────────────────────────────
@@ -496,8 +530,10 @@ function init() {
 
 function setHeaderPlayer() {
   const c = getPlayerColor(currentPlayer);
-  document.getElementById('headerAvatar').style.background = c;
-  document.getElementById('headerAvatar').textContent = initials(currentPlayer);
+  const ha = document.getElementById('headerAvatar');
+  ha.style.background = c;
+  ha.style.color = textOn(c);
+  ha.textContent = initials(currentPlayer);
   document.getElementById('headerName').textContent = currentPlayer;
 }
 
@@ -813,10 +849,10 @@ function renderRanking() {
       50 pts ganador · +25 goles local · +25 goles visitante
     </p>`;
 
-  // Gráfico de evolución
+  // Gráfico de evolución — altura fija para que se adapte bien en móvil
   const chartHtml = `<div class="chart-card">
     <div class="chart-title">Evolución del ranking</div>
-    <canvas id="rankChart" height="180"></canvas>
+    <div class="chart-box"><canvas id="rankChart"></canvas></div>
   </div>`;
 
   el.innerHTML = chartHtml + rankingHtml;
@@ -832,31 +868,45 @@ function renderRanking() {
     return DAYS_ES[dt.getDay()] + ' ' + day;
   });
 
+  // Con muchas jornadas reducimos/ocultamos los puntos para no saturar
+  const nDays = sortedDays.length;
+  const ptRadius = nDays > 18 ? 0 : nDays > 10 ? 2 : 4;
+
   rankChart = new Chart(ctx, {
     type: 'line',
     data: {
       labels,
-      datasets: Object.entries(playersByDay).map(([name, data]) => ({
-        label: name,
-        data,
-        borderColor: getPlayerColor(name),
-        backgroundColor: getPlayerColor(name) + '18',
-        borderWidth: 2.5,
-        pointRadius: 4,
-        pointBackgroundColor: getPlayerColor(name),
-        tension: 0.35,
-        fill: false,
-      }))
+      datasets: Object.entries(playersByDay).map(([name, data]) => {
+        const c = getPlayerColor(name);
+        return {
+          label: name,
+          data,
+          borderColor: c,
+          backgroundColor: c,
+          borderWidth: 2.5,
+          pointRadius: ptRadius,
+          pointHoverRadius: ptRadius + 2,
+          pointBackgroundColor: c,
+          tension: 0.35,
+          fill: false,
+        };
+      })
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
       plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } },
         tooltip: { mode: 'index', intersect: false }
       },
       scales: {
-        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
-        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 }, precision: 0 } },
+        x: {
+          grid: { display: false },
+          // En móvil, con muchos días, mostrar como máximo ~7 etiquetas sin rotar
+          ticks: { font: { size: 11 }, autoSkip: true, maxTicksLimit: 7, maxRotation: 0, minRotation: 0 }
+        }
       }
     }
   });
@@ -869,6 +919,9 @@ window.showSection = function(section) {
     document.getElementById('nav-' + s).className = 'nav-btn' + (s===section ? ' active' : '');
   });
   document.getElementById('dayScrollWrap').style.display = section==='matches' ? 'block' : 'none';
+  // El gráfico no puede medirse mientras su pestaña está oculta (canvas 0×0).
+  // Al mostrar Clasificación lo recreamos ya con el contenedor visible.
+  if (section === 'ranking') renderRanking();
 };
 
 // ── Animaciones ───────────────────────────────────────────────────────────
