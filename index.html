@@ -289,6 +289,22 @@ header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
 .chart-title { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
 .chart-box { position: relative; height: 220px; }
 
+/* ── Grupos ── */
+.group-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1rem; }
+.group-title { background: var(--navy); color: #fff; font-weight: 700; font-size: 0.85rem; padding: 0.6rem 1rem; }
+.group-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.group-table th { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); font-weight: 600; padding: 0.5rem 0.3rem; text-align: center; }
+.group-table th.g-team-h { text-align: left; padding-left: 1rem; }
+.group-table td { padding: 0.5rem 0.3rem; text-align: center; border-top: 1px solid #f1f5f9; }
+.group-table .g-pos { width: 26px; color: var(--muted); font-weight: 700; }
+.group-table .g-team { text-align: left; padding-left: 0.5rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; width: 99%; }
+.group-table .g-team .flag-img { height: 18px; border-radius: 3px; display: inline-block; vertical-align: middle; margin-right: 7px; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+.group-table .g-pts { font-weight: 800; color: var(--navy); }
+.group-table tr.qualifies td { background: #f0fdf4; }
+.group-table tr.qualifies .g-pos { color: var(--success); }
+.group-legend { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--muted); margin: 0 0.25rem 1rem; }
+.group-legend .dot { width: 10px; height: 10px; border-radius: 3px; background: #bbf7d0; flex-shrink: 0; }
+
 /* ── Modal ── */
 .modal-overlay {
   position: fixed; inset: 0;
@@ -381,6 +397,7 @@ header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
 <!-- Nav -->
 <nav class="nav">
   <button class="nav-btn active" onclick="showSection('matches')" id="nav-matches">Partidos</button>
+  <button class="nav-btn" onclick="showSection('groups')" id="nav-groups">📊 Grupos</button>
   <button class="nav-btn" onclick="showSection('ranking')" id="nav-ranking">🏆 Clasificación</button>
 </nav>
 
@@ -392,6 +409,7 @@ header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
 <!-- Main content -->
 <div class="container">
   <div id="section-matches"><div class="spinner">Cargando partidos...</div></div>
+  <div id="section-groups" style="display:none"></div>
   <div id="section-ranking" style="display:none"></div>
 </div>
 
@@ -689,7 +707,68 @@ window.selectDay = function(date) {
 // ── Render ────────────────────────────────────────────────────────────────
 function renderAll() {
   renderMatches();
+  renderGroups();
   renderRanking();
+}
+
+// ── Clasificación de grupos ───────────────────────────────────────────────
+function renderGroups() {
+  const el = document.getElementById('section-groups');
+  const allMatches = Object.values(allDays).flatMap(d => d.matches || []);
+
+  // Acumular estadísticas por grupo y equipo
+  const groups = {};
+  allMatches.forEach(m => {
+    const g = m.group;
+    if (!g) return;
+    if (!groups[g]) groups[g] = {};
+    [m.home, m.away].forEach(t => {
+      if (!groups[g][t]) groups[g][t] = { team: t, pj:0, g:0, e:0, p:0, gf:0, gc:0, pts:0 };
+    });
+    if (m.result) {
+      const h = groups[g][m.home], a = groups[g][m.away];
+      const hs = m.result.home, as = m.result.away;
+      h.pj++; a.pj++;
+      h.gf += hs; h.gc += as; a.gf += as; a.gc += hs;
+      if (hs > as)      { h.g++; h.pts += 3; a.p++; }
+      else if (hs < as) { a.g++; a.pts += 3; h.p++; }
+      else              { h.e++; a.e++; h.pts++; a.pts++; }
+    }
+  });
+
+  const groupNames = Object.keys(groups).sort();
+  if (!groupNames.length) {
+    el.innerHTML = '<div class="empty-state"><div class="eicon">📊</div><p>Aún no hay grupos.</p></div>';
+    return;
+  }
+
+  const cards = groupNames.map(gname => {
+    const standings = Object.values(groups[gname]).sort((x,y) =>
+      y.pts - x.pts ||
+      (y.gf - y.gc) - (x.gf - x.gc) ||
+      y.gf - x.gf ||
+      x.team.localeCompare(y.team)
+    );
+    const rows = standings.map((s, i) => {
+      const dg = s.gf - s.gc;
+      return `<tr class="${i < 2 ? 'qualifies' : ''}">
+        <td class="g-pos">${i + 1}</td>
+        <td class="g-team">${getFlag(s.team)}${s.team}</td>
+        <td>${s.pj}</td>
+        <td>${dg > 0 ? '+' : ''}${dg}</td>
+        <td class="g-pts">${s.pts}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="group-card">
+      <div class="group-title">${gname}</div>
+      <table class="group-table">
+        <thead><tr><th></th><th class="g-team-h">Equipo</th><th>PJ</th><th>DG</th><th>Pts</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `<div class="group-legend"><span class="dot"></span>Los 2 primeros se clasifican directamente (más los mejores terceros)</div>${cards}`;
 }
 
 function renderMatches() {
@@ -929,7 +1008,7 @@ function renderRanking() {
 
 // ── Navigation ────────────────────────────────────────────────────────────
 window.showSection = function(section) {
-  ['matches','ranking'].forEach(s => {
+  ['matches','groups','ranking'].forEach(s => {
     document.getElementById('section-' + s).style.display = s===section ? 'block' : 'none';
     document.getElementById('nav-' + s).className = 'nav-btn' + (s===section ? ' active' : '');
   });
