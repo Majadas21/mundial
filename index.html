@@ -154,7 +154,9 @@ header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
   margin-bottom: 1.1rem;
 }
 .team { text-align: center; }
-.team-flag { font-size: 2.8rem; line-height: 1; margin-bottom: 0.25rem; }
+.team-flag { line-height: 1; margin-bottom: 0.4rem; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+.flag-img { height: 40px; width: auto; border-radius: 5px; box-shadow: 0 1px 4px rgba(0,0,0,0.18); display: block; }
+.flag-fallback { font-size: 2.4rem; line-height: 1; }
 .team-name { font-size: 0.78rem; font-weight: 600; color: var(--text); }
 .vs-block { text-align: center; }
 .vs { font-size: 0.75rem; color: var(--muted); font-weight: 600; letter-spacing: 1px; }
@@ -464,33 +466,43 @@ function avatar(name, size=36) {
 }
 
 // ── Flags ─────────────────────────────────────────────────────────────────
+// Códigos ISO 3166-1 alpha-2 (Inglaterra/Gales/Escocia usan los subcódigos
+// de flagcdn). Usamos IMÁGENES y no emojis: Windows no renderiza los emojis
+// de bandera de país, así que se veían en blanco o como dos letras.
 const FLAGS = {
-  'España':'🇪🇸','Alemania':'🇩🇪','Francia':'🇫🇷','Brasil':'🇧🇷',
-  'Argentina':'🇦🇷','Portugal':'🇵🇹','Inglaterra':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Italia':'🇮🇹',
-  'Países Bajos':'🇳🇱','Bélgica':'🇧🇪','Croacia':'🇭🇷','Uruguay':'🇺🇾',
-  'México':'🇲🇽','Marruecos':'🇲🇦','Senegal':'🇸🇳','Japón':'🇯🇵',
-  'Corea del Sur':'🇰🇷','Australia':'🇦🇺','Estados Unidos':'🇺🇸','Canadá':'🇨🇦',
-  'Ecuador':'🇪🇨','Colombia':'🇨🇴','Ghana':'🇬🇭','Suiza':'🇨🇭',
-  'Polonia':'🇵🇱','Serbia':'🇷🇸','Dinamarca':'🇩🇰','Camerún':'🇨🇲',
-  'Qatar':'🇶🇦','Túnez':'🇹🇳','Arabia Saudí':'🇸🇦','Costa Rica':'🇨🇷',
-  'Irán':'🇮🇷','Gales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','Suecia':'🇸🇪','Noruega':'🇳🇴',
-  'Turquía':'🇹🇷','Austria':'🇦🇹','Grecia':'🇬🇷','Rumanía':'🇷🇴',
-  'Eslovaquia':'🇸🇰','Ucrania':'🇺🇦','Hungría':'🇭🇺','Escocia':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
-  'Albania':'🇦🇱','Georgia':'🇬🇪','Eslovenia':'🇸🇮','República Checa':'🇨🇿',
-  'Egipto':'🇪🇬','Cabo Verde':'🇨🇻','Nueva Zelanda':'🇳🇿','Venezuela':'🇻🇪',
-  'Paraguay':'🇵🇾','Bolivia':'🇧🇴','Chile':'🇨🇱','Perú':'🇵🇪',
-  'Nigeria':'🇳🇬','Argelia':'🇩🇿','Mali':'🇲🇱','Costa de Marfil':'🇨🇮',
-  'RD Congo':'🇨🇩','Tanzania':'🇹🇿','Guinea':'🇬🇳','Burkina Faso':'🇧🇫',
-  'Sudáfrica':'🇿🇦','Zambia':'🇿🇲','Kenia':'🇰🇪','Irak':'🇮🇶',
-  'Jordania':'🇯🇴','Emiratos Árabes':'🇦🇪','Uzbekistán':'🇺🇿',
-  'Indonesia':'🇮🇩','Tailandia':'🇹🇭','China':'🇨🇳','India':'🇮🇳',
-  'Vietnam':'🇻🇳','Panamá':'🇵🇦','Jamaica':'🇯🇲','Honduras':'🇭🇳',
-  'El Salvador':'🇸🇻','Cuba':'🇨🇺','Trinidad y Tobago':'🇹🇹','Curazao':'🇨🇼','Curaçao':'🇨🇼','República Dominicana':'🇩🇴','Haití':'🇭🇹','Líbano':'🇱🇧','Irak':'🇮🇶',
+  'España':'es','Alemania':'de','Francia':'fr','Brasil':'br',
+  'Argentina':'ar','Portugal':'pt','Inglaterra':'gb-eng','Italia':'it',
+  'Países Bajos':'nl','Bélgica':'be','Croacia':'hr','Uruguay':'uy',
+  'México':'mx','Marruecos':'ma','Senegal':'sn','Japón':'jp',
+  'Corea del Sur':'kr','Australia':'au','Estados Unidos':'us','Canadá':'ca',
+  'Ecuador':'ec','Colombia':'co','Ghana':'gh','Suiza':'ch',
+  'Polonia':'pl','Serbia':'rs','Dinamarca':'dk','Camerún':'cm',
+  'Qatar':'qa','Túnez':'tn','Arabia Saudí':'sa','Costa Rica':'cr',
+  'Irán':'ir','Gales':'gb-wls','Suecia':'se','Noruega':'no',
+  'Turquía':'tr','Austria':'at','Grecia':'gr','Rumanía':'ro',
+  'Eslovaquia':'sk','Ucrania':'ua','Hungría':'hu','Escocia':'gb-sct',
+  'Albania':'al','Georgia':'ge','Eslovenia':'si','República Checa':'cz',
+  'Egipto':'eg','Cabo Verde':'cv','Nueva Zelanda':'nz','Venezuela':'ve',
+  'Paraguay':'py','Bolivia':'bo','Chile':'cl','Perú':'pe',
+  'Nigeria':'ng','Argelia':'dz','Mali':'ml','Costa de Marfil':'ci',
+  'RD Congo':'cd','Tanzania':'tz','Guinea':'gn','Burkina Faso':'bf',
+  'Sudáfrica':'za','Zambia':'zm','Kenia':'ke','Irak':'iq',
+  'Jordania':'jo','Emiratos Árabes':'ae','Uzbekistán':'uz',
+  'Indonesia':'id','Tailandia':'th','China':'cn','India':'in',
+  'Vietnam':'vn','Panamá':'pa','Jamaica':'jm','Honduras':'hn',
+  'El Salvador':'sv','Cuba':'cu','Trinidad y Tobago':'tt','Curazao':'cw',
+  'Curaçao':'cw','República Dominicana':'do','Haití':'ht','Líbano':'lb',
   // Variantes de nombre que devuelve la API (por si un día no se tradujo)
-  'Bosnia y Herzegovina':'🇧🇦','Bosnia-Herzegovina':'🇧🇦','Congo DR':'🇨🇩',
-  'Czechia':'🇨🇿','Haiti':'🇭🇹','South Korea':'🇰🇷',
+  'Bosnia y Herzegovina':'ba','Bosnia-Herzegovina':'ba','Congo DR':'cd',
+  'Czechia':'cz','Haiti':'ht','South Korea':'kr',
 };
-function getFlag(name) { return FLAGS[name] || '🏳️'; }
+function getFlag(name) {
+  const code = FLAGS[name];
+  if (!code) return `<span class="flag-fallback">🏳️</span>`;
+  return `<img class="flag-img" alt="${name}"
+    src="https://flagcdn.com/h40/${code}.png"
+    srcset="https://flagcdn.com/h80/${code}.png 2x">`;
+}
 
 // ── Demo data ─────────────────────────────────────────────────────────────
 function todayLocal() {
