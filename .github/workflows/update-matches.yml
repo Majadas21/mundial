@@ -5,8 +5,19 @@ on:
     # Se ejecuta cada día a las 09:00 hora española (07:00 UTC en verano CEST)
     # Los partidos en EEUU/México terminan de madrugada en España, así que a las 9am ya están todos finalizados
     - cron: '0 4 * * *'
-  # También se puede lanzar manualmente desde la pestaña Actions de GitHub
+  # También se puede lanzar manualmente desde la pestaña Actions de GitHub.
+  # Para una carga inicial (backfill) rellena date_from / date_to:
+  #   date_from = 2026-06-11  → carga todos los partidos desde esa fecha
   workflow_dispatch:
+    inputs:
+      date_from:
+        description: "Backfill desde (YYYY-MM-DD). Vacío = solo el día actual."
+        required: false
+        default: ""
+      date_to:
+        description: "Backfill hasta (YYYY-MM-DD). Vacío = hoy."
+        required: false
+        default: ""
 
 jobs:
   update:
@@ -21,6 +32,8 @@ jobs:
       - name: Generar matches.json con la API
         env:
           FOOTBALL_TOKEN: ${{ secrets.FOOTBALL_API_TOKEN }}
+          DATE_FROM: ${{ github.event.inputs.date_from }}
+          DATE_TO: ${{ github.event.inputs.date_to }}
         run: |
           python3 scripts/fetch_matches.py
 

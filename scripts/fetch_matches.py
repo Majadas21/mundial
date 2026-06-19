@@ -65,22 +65,12 @@ def format_group(raw: str) -> str:
         return f"Grupo {letter}"
     return raw.replace("_", " ").title()
 
-def fetch_today() -> list:
-    if not TOKEN:
-        print("⚠️  FOOTBALL_TOKEN no configurado — generando matches.json vacío.")
-        return []
+OUTPUT_FILE = "matches.json"
 
-    # Ventana: ahora - 24h → ahora + 24h
-    now_utc     = datetime.now(timezone.utc)
-    window_start = now_utc - timedelta(hours=24)
-    window_end   = now_utc + timedelta(hours=24)
 
-    now_madrid   = now_utc + timedelta(hours=2)
-    jornada_label = now_madrid.strftime("%Y-%m-%d")
-
-    date_from = (now_utc - timedelta(days=1)).strftime("%Y-%m-%d")
-    date_to   = (now_utc + timedelta(days=1)).strftime("%Y-%m-%d")
-
+def fetch_chunk(date_from: str, date_to: str) -> dict:
+    """Pide a la API los partidos entre date_from y date_to (YYYY-MM-DD, inclusive)
+    y los devuelve agrupados por su fecha real en Madrid: { "2026-06-15": [...] }."""
     url = (
         f"https://api.football-data.org/v4/competitions/{COMPETITION}/matches"
         f"?dateFrom={date_from}&dateTo={date_to}"
@@ -90,45 +80,114 @@ def fetch_today() -> list:
         with urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read())
     except HTTPError as e:
-        print(f"❌ Error HTTP {e.code} al llamar a la API.", file=sys.stderr)
-        return []
+        print(f"❌ Error HTTP {e.code} al llamar a la API ({date_from}→{date_to}).", file=sys.stderr)
+        return {}
 
-    # Agrupar partidos por su fecha real en Madrid (un partido a las 00:00 va en su propio día)
     days = {}
     for m in data.get("matches", []):
         kick_utc = datetime.fromisoformat(m["utcDate"].replace("Z", "+00:00"))
-        kick_madrid = kick_utc + timedelta(hours=2)
-
-        if not (window_start <= kick_utc < window_end):
-            continue
+        kick_madrid = kick_utc + timedelta(hours=2)  # CEST
 
         day_key = kick_madrid.strftime("%Y-%m-%d")  # fecha real del partido en Madrid
-        home = to_es(m["homeTeam"]["name"])
-        away = to_es(m["awayTeam"]["name"])
         match = {
             "id": f"m{m['id']}",
-            "home": home,
-            "away": away,
+            "home": to_es(m["homeTeam"]["name"]),
+            "away": to_es(m["awayTeam"]["name"]),
             "time": kick_madrid.strftime("%H:%M"),
             "datetime": kick_madrid.strftime("%Y-%m-%dT%H:%M"),
             "group": format_group(m.get("group") or m.get("stage") or ""),
         }
         if m.get("status") == "FINISHED" and m.get("score", {}).get("fullTime"):
-            match["result"] = {
-                "home": m["score"]["fullTime"]["home"],
-                "away": m["score"]["fullTime"]["away"],
-            }
-        if day_key not in days:
-            days[day_key] = []
-        days[day_key].append(match)
-
-    total = sum(len(v) for v in days.values())
-    print(f"✅ {total} partido(s) en {len(days)} día(s): {sorted(days.keys())}.")
+            ft = m["score"]["fullTime"]
+            if ft.get("home") is not None and ft.get("away") is not None:
+                match["result"] = {"home": ft["home"], "away": ft["away"]}
+        days.setdefault(day_key, []).append(match)
     return days
 
+
+def daterange_chunks(start: datetime, end: datetime, max_days: int = 9):
+    """Parte [start, end] en tramos de como mucho max_days (límite del plan gratuito)."""
+    cur = start
+    while cur <= end:
+        chunk_end = min(cur + timedelta(days=max_days - 1), end)
+        yield cur.strftime("%Y-%m-%d"), chunk_end.strftime("%Y-%m-%d")
+        cur = chunk_end + timedelta(days=1)
+
+
+def fetch_matches() -> dict:
+    """Decide la ventana de fechas. Por defecto ±1 día (ejecución diaria).
+    Si DATE_FROM/DATE_TO están definidos (backfill manual), usa ese rango."""
+    if not TOKEN:
+        print("⚠️  FOOTBALL_TOKEN no configurado — no se piden partidos.")
+        return {}
+
+    now_utc = datetime.now(timezone.utc)
+    env_from = os.environ.get("DATE_FROM", "").strip()
+    env_to = os.environ.get("DATE_TO", "").strip()
+
+    if env_from:
+        start = datetime.strptime(env_from, "%Y-%m-%d")
+        end = datetime.strptime(env_to, "%Y-%m-%d") if env_to else now_utc
+        print(f"🗓️  Backfill: {start:%Y-%m-%d} → {end:%Y-%m-%d}")
+    else:
+        start = now_utc - timedelta(days=1)
+        end = now_utc + timedelta(days=1)
+
+    fetched = {}
+    for d_from, d_to in daterange_chunks(start, end):
+        chunk = fetch_chunk(d_from, d_to)
+        for day, matches in chunk.items():
+            fetched.setdefault(day, []).extend(matches)
+
+    total = sum(len(v) for v in fetched.values())
+    print(f"✅ {total} partido(s) en {len(fetched)} día(s): {sorted(fetched.keys())}.")
+    return fetched
+
+
+def load_existing() -> dict:
+    """Carga el matches.json actual del repo para no perder el histórico."""
+    if not os.path.exists(OUTPUT_FILE):
+        return {}
+    try:
+        with open(OUTPUT_FILE, encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"⚠️  No se pudo leer {OUTPUT_FILE} existente: {e}", file=sys.stderr)
+        return {}
+
+
+def merge(existing: dict, fetched: dict) -> dict:
+    """Fusiona los partidos nuevos sobre el histórico SIN borrar días anteriores.
+    Cada partido se identifica por su id dentro del día: si ya existe se actualiza
+    (así un partido que terminó recibe su 'result'); si es nuevo se añade."""
+    for day, matches in fetched.items():
+        bucket = existing.setdefault(day, [])
+        by_id = {m["id"]: i for i, m in enumerate(bucket) if "id" in m}
+        for m in matches:
+            if m["id"] in by_id:
+                old = bucket[by_id[m["id"]]]
+                # Nunca perder un resultado ya guardado si la API lo devuelve sin él
+                if "result" not in m and "result" in old:
+                    m["result"] = old["result"]
+                bucket[by_id[m["id"]]] = m   # actualiza (puede traer resultado nuevo)
+            else:
+                bucket.append(m)
+        bucket.sort(key=lambda x: x.get("datetime") or x.get("time", ""))
+
+    # Reordenar los días cronológicamente
+    return {day: existing[day] for day in sorted(existing.keys())}
+
+
 if __name__ == "__main__":
-    days = fetch_today()
-    # days = { "2026-06-15": [...], "2026-06-16": [...] }
-    with open("matches.json", "w", encoding="utf-8") as f:
-        json.dump(days, f, ensure_ascii=False, indent=2)
-    print("📄 matches.json generado correctamente.")
+    fetched = fetch_matches()
+    existing = load_existing()
+    merged = merge(existing, fetched)
+
+    new_days = sorted(set(merged) - set(existing))
+    if new_days:
+        print(f"➕ Días añadidos: {new_days}")
+
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        json.dump(merged, f, ensure_ascii=False, indent=2)
+    print(f"📄 {OUTPUT_FILE} actualizado: {len(merged)} día(s) en total.")
