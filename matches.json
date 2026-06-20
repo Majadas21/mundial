@@ -408,7 +408,11 @@
       "away": "Suecia",
       "time": "19:00",
       "datetime": "2026-06-20T19:00",
-      "group": "Grupo F"
+      "group": "Grupo F",
+      "result": {
+        "home": 5,
+        "away": 1
+      }
     },
     {
       "id": "m537353",
