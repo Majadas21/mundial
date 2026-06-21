@@ -712,6 +712,39 @@ function renderAll() {
 }
 
 // ── Clasificación de grupos ───────────────────────────────────────────────
+const TEAM_NAME_ES = {
+  'South Korea':'Corea del Sur','Korea Republic':'Corea del Sur',
+  'Czechia':'República Checa','Czech Republic':'República Checa',
+  'Congo DR':'RD Congo','DR Congo':'RD Congo',
+  'Haiti':'Haití',
+  'Bosnia-Herzegovina':'Bosnia y Herzegovina','Bosnia and Herzegovina':'Bosnia y Herzegovina',
+  'Cape Verde Islands':'Cabo Verde','Cape Verde':'Cabo Verde',
+  'Curacao':'Curazao',
+  'Ivory Coast':'Costa de Marfil',
+  'United States':'Estados Unidos','USA':'Estados Unidos',
+  'Netherlands':'Países Bajos','Holland':'Países Bajos',
+  'Morocco':'Marruecos','Egypt':'Egipto','Algeria':'Argelia',
+  'Saudi Arabia':'Arabia Saudí','Iran':'Irán','Iraq':'Irak',
+  'Japan':'Japón','Mexico':'México','Panama':'Panamá',
+  'Switzerland':'Suiza','Sweden':'Suecia','Norway':'Noruega',
+  'Turkey':'Turquía','Tunisia':'Túnez','Cameroon':'Camerún',
+  'Serbia':'Serbia','Poland':'Polonia','Denmark':'Dinamarca',
+  'Australia':'Australia','New Zealand':'Nueva Zelanda',
+  'Venezuela':'Venezuela','Ecuador':'Ecuador','Paraguay':'Paraguay',
+  'Bolivia':'Bolivia','Chile':'Chile','Peru':'Perú',
+  'Senegal':'Senegal','Ghana':'Ghana','Nigeria':'Nigeria',
+  'South Africa':'Sudáfrica','Zambia':'Zambia','Kenya':'Kenia',
+  'Tanzania':'Tanzania','Guinea':'Guinea','Mali':'Mali',
+  'Burkina Faso':'Burkina Faso',
+  'Jordan':'Jordania','Uzbekistan':'Uzbekistán','Indonesia':'Indonesia',
+  'Scotland':'Escocia','Wales':'Gales','England':'Inglaterra',
+  'Germany':'Alemania','France':'Francia','Spain':'España',
+  'Portugal':'Portugal','Belgium':'Bélgica','Croatia':'Croacia',
+  'Uruguay':'Uruguay','Colombia':'Colombia','Argentina':'Argentina',
+  'Brazil':'Brasil','Canada':'Canadá','Qatar':'Qatar',
+};
+function normTeam(name) { return TEAM_NAME_ES[name] || name; }
+
 function renderGroups() {
   const el = document.getElementById('section-groups');
   const allMatches = Object.values(allDays).flatMap(d => d.matches || []);
@@ -724,11 +757,12 @@ function renderGroups() {
     const g = m.group;
     if (!g || !g.startsWith('Grupo ')) return;
     if (!groups[g]) groups[g] = {};
-    [m.home, m.away].forEach(t => {
+    const home = normTeam(m.home), away = normTeam(m.away);
+    [home, away].forEach(t => {
       if (!groups[g][t]) groups[g][t] = { team: t, pj:0, g:0, e:0, p:0, gf:0, gc:0, pts:0 };
     });
     if (m.result) {
-      const h = groups[g][m.home], a = groups[g][m.away];
+      const h = groups[g][home], a = groups[g][away];
       const hs = m.result.home, as = m.result.away;
       h.pj++; a.pj++;
       h.gf += hs; h.gc += as; a.gf += as; a.gc += hs;
