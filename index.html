@@ -1103,7 +1103,7 @@ const VAPID_KEY = 'BFhlr3ufvNCE8weQjcdeJR_OjLMA-9figaX5tcKGZ19EaC3Sp11TDMSvgORAD
 
 const messaging = getMessaging(app);
 
-async function toggleNotifications() {
+window.toggleNotifications = async function toggleNotifications() {
   const btn = document.getElementById('notifBtn');
   if (Notification.permission === 'granted') {
     showToast('Las notificaciones ya están activadas ✅');
