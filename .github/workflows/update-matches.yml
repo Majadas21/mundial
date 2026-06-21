@@ -34,7 +34,9 @@ jobs:
           FOOTBALL_TOKEN: ${{ secrets.FOOTBALL_API_TOKEN }}
           DATE_FROM: ${{ github.event.inputs.date_from }}
           DATE_TO: ${{ github.event.inputs.date_to }}
+          FIREBASE_CREDENTIALS_JSON: ${{ secrets.FIREBASE_CREDENTIALS_JSON }}
         run: |
+          pip install google-auth -q
           python3 scripts/fetch_matches.py
 
       - name: Commit y push si hay cambios

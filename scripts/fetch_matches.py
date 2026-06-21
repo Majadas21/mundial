@@ -12,6 +12,16 @@ from datetime import datetime, timezone, timedelta
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
+try:
+    import google.auth.transport.requests
+    import google.oauth2.service_account
+    FCM_AVAILABLE = True
+except ImportError:
+    FCM_AVAILABLE = False
+
+PROJECT_ID = "mundial-99cdc"
+FCM_URL = f"https://fcm.googleapis.com/v1/projects/{PROJECT_ID}/messages:send"
+
 TOKEN = os.environ.get("FOOTBALL_TOKEN", "")
 COMPETITION = "WC"  # Copa del Mundo FIFA
 
@@ -185,6 +195,66 @@ def merge(existing: dict, fetched: dict) -> dict:
     return {day: existing[day] for day in sorted(existing.keys())}
 
 
+def get_fcm_access_token(creds_json: str) -> str:
+    """Obtiene un OAuth2 access token para la API de FCM v1."""
+    info = json.loads(creds_json)
+    creds = google.oauth2.service_account.Credentials.from_service_account_info(
+        info, scopes=["https://www.googleapis.com/auth/firebase.messaging"]
+    )
+    creds.refresh(google.auth.transport.requests.Request())
+    return creds.token
+
+
+def send_notifications(creds_json: str, body: str):
+    """Envía una notificación push a todos los tokens registrados en Firebase."""
+    if not FCM_AVAILABLE:
+        print("⚠️  google-auth no disponible, omitiendo notificaciones.")
+        return
+
+    # Leer tokens desde Firebase REST API
+    db_url = "https://mundial-99cdc-default-rtdb.europe-west1.firebasedatabase.app/fcm_tokens.json"
+    try:
+        with urlopen(db_url, timeout=10) as r:
+            tokens_data = json.loads(r.read()) or {}
+    except Exception as e:
+        print(f"⚠️  No se pudieron leer los tokens FCM: {e}", file=sys.stderr)
+        return
+
+    if not tokens_data:
+        print("ℹ️  No hay tokens FCM registrados.")
+        return
+
+    access_token = get_fcm_access_token(creds_json)
+    sent = 0
+    for safe_token in tokens_data:
+        # Restaurar el token real (los . fueron reemplazados por _ en el cliente)
+        # FCM acepta el token con _ también, así que lo usamos tal cual
+        real_token = safe_token.replace("_", ".")  # aproximación; ver nota abajo
+        payload = json.dumps({
+            "message": {
+                "token": real_token,
+                "notification": {
+                    "title": "⚽ Quiniela Mundial 2026",
+                    "body": body,
+                },
+                "webpush": {
+                    "fcmOptions": {"link": "https://majadas21.github.io/mundial/"}
+                }
+            }
+        }).encode()
+        req = Request(FCM_URL, data=payload, headers={
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        })
+        try:
+            urlopen(req, timeout=10)
+            sent += 1
+        except Exception as e:
+            print(f"⚠️  Error enviando a token {safe_token[:20]}…: {e}", file=sys.stderr)
+
+    print(f"🔔 Notificaciones enviadas: {sent}/{len(tokens_data)}")
+
+
 if __name__ == "__main__":
     fetched = fetch_matches()
     existing = load_existing()
@@ -197,3 +267,9 @@ if __name__ == "__main__":
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(merged, f, ensure_ascii=False, indent=2)
     print(f"📄 {OUTPUT_FILE} actualizado: {len(merged)} día(s) en total.")
+
+    # Enviar notificación push si hay cambios y hay credenciales Firebase
+    creds_json = os.environ.get("FIREBASE_CREDENTIALS_JSON", "").strip()
+    if creds_json and fetched:
+        today = datetime.now(timezone.utc).strftime("%d/%m")
+        send_notifications(creds_json, f"Partidos del {today} actualizados — ¡haz tu pronóstico!")

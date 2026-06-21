@@ -388,9 +388,13 @@ header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
 <!-- Header -->
 <header>
   <h1>⚽ Mundial 2026</h1>
-  <div class="player-pill" id="playerPill" onclick="changeName()">
-    <div class="player-avatar-sm" id="headerAvatar"></div>
-    <span id="headerName">...</span>
+  <div style="display:flex;align-items:center;gap:0.5rem">
+    <button id="notifBtn" onclick="toggleNotifications()" title="Activar notificaciones"
+      style="background:none;border:none;cursor:pointer;font-size:1.4rem;opacity:0.6;padding:0.2rem;line-height:1">🔔</button>
+    <div class="player-pill" id="playerPill" onclick="changeName()">
+      <div class="player-avatar-sm" id="headerAvatar"></div>
+      <span id="headerName">...</span>
+    </div>
   </div>
 </header>
 
@@ -418,6 +422,7 @@ header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC9wtUHQXZwok7Y81YqodnVzT-5KWPFhyo",
@@ -1090,6 +1095,49 @@ function showToast(msg, isError = false) {
 }
 
 init();
+
+// ── Notificaciones push ───────────────────────────────────────────────────
+// VAPID key: Firebase Console → Project Settings → Cloud Messaging
+//            → Web Push certificates → Generate key pair
+const VAPID_KEY = 'BFhlr3ufvNCE8weQjcdeJR_OjLMA-9figaX5tcKGZ19EaC3Sp11TDMSvgORAD9U8x16e8JBh9NLrSbft2f99P9o';
+
+const messaging = getMessaging(app);
+
+async function toggleNotifications() {
+  const btn = document.getElementById('notifBtn');
+  if (Notification.permission === 'granted') {
+    showToast('Las notificaciones ya están activadas ✅');
+    btn.style.opacity = '1';
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') {
+    showToast('Notificaciones denegadas', true);
+    return;
+  }
+  await registerPushToken();
+}
+
+async function registerPushToken() {
+  try {
+    const swReg = await navigator.serviceWorker.register('./sw.js');
+    const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+    if (!token) return;
+    const safeToken = token.replace(/[.#$/[\]]/g, '_');
+    await set(ref(db, `fcm_tokens/${safeToken}`), { ts: Date.now() });
+    document.getElementById('notifBtn').style.opacity = '1';
+    showToast('¡Notificaciones activadas! 🔔');
+  } catch (e) {
+    console.error('Error registrando notificaciones:', e);
+    showToast('Error al activar notificaciones', true);
+  }
+}
+
+// Al cargar, si ya tenemos permiso, re-registramos el token silenciosamente
+if ('Notification' in window && Notification.permission === 'granted') {
+  registerPushToken().catch(() => {});
+  document.getElementById('notifBtn').style.opacity = '1';
+}
 </script>
 </body>
 </html>
