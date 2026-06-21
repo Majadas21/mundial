@@ -16,8 +16,8 @@
   "2026-06-12": [
     {
       "id": "m537328",
-      "home": "South Korea",
-      "away": "Czechia",
+      "home": "Corea del Sur",
+      "away": "República Checa",
       "time": "04:00",
       "datetime": "2026-06-12T04:00",
       "group": "Grupo A",
@@ -29,7 +29,7 @@
     {
       "id": "m537333",
       "home": "Canadá",
-      "away": "Bosnia-Herzegovina",
+      "away": "Bosnia y Herzegovina",
       "time": "21:00",
       "datetime": "2026-06-12T21:00",
       "group": "Grupo B",
@@ -80,7 +80,7 @@
     },
     {
       "id": "m537340",
-      "home": "Haiti",
+      "home": "Haíti",
       "away": "Escocia",
       "time": "03:00",
       "datetime": "2026-06-14T03:00",
@@ -255,7 +255,7 @@
     {
       "id": "m537403",
       "home": "Portugal",
-      "away": "Congo DR",
+      "away": "RD Congo",
       "time": "19:00",
       "datetime": "2026-06-17T19:00",
       "group": "Grupo K",
@@ -304,7 +304,7 @@
     },
     {
       "id": "m537329",
-      "home": "Czechia",
+      "home": "República Checa",
       "away": "Sudáfrica",
       "time": "18:00",
       "datetime": "2026-06-18T18:00",
@@ -317,7 +317,7 @@
     {
       "id": "m537335",
       "home": "Suiza",
-      "away": "Bosnia-Herzegovina",
+      "away": "Bosnia y Herzegovina",
       "time": "21:00",
       "datetime": "2026-06-18T21:00",
       "group": "Grupo B",
