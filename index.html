@@ -1124,7 +1124,7 @@ async function registerPushToken() {
     const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
     if (!token) return;
     const safeToken = token.replace(/[.#$/[\]]/g, '_');
-    await set(ref(db, `fcm_tokens/${safeToken}`), { ts: Date.now() });
+    await set(ref(db, `fcm_tokens/${safeToken}`), { ts: Date.now(), token });
     document.getElementById('notifBtn').style.opacity = '1';
     showToast('¡Notificaciones activadas! 🔔');
   } catch (e) {

@@ -226,10 +226,10 @@ def send_notifications(creds_json: str, body: str):
 
     access_token = get_fcm_access_token(creds_json)
     sent = 0
-    for safe_token in tokens_data:
-        # Restaurar el token real (los . fueron reemplazados por _ en el cliente)
-        # FCM acepta el token con _ también, así que lo usamos tal cual
-        real_token = safe_token.replace("_", ".")  # aproximación; ver nota abajo
+    for safe_token, entry in tokens_data.items():
+        real_token = entry.get("token") if isinstance(entry, dict) else None
+        if not real_token:
+            continue
         payload = json.dumps({
             "message": {
                 "token": real_token,
