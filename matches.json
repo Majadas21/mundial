@@ -458,7 +458,11 @@
       "away": "Arabia Saudí",
       "time": "18:00",
       "datetime": "2026-06-21T18:00",
-      "group": "Grupo H"
+      "group": "Grupo H",
+      "result": {
+        "home": 4,
+        "away": 0
+      }
     },
     {
       "id": "m537365",
@@ -466,7 +470,11 @@
       "away": "Irán",
       "time": "21:00",
       "datetime": "2026-06-21T21:00",
-      "group": "Grupo G"
+      "group": "Grupo G",
+      "result": {
+        "home": 0,
+        "away": 0
+      }
     }
   ],
   "2026-06-22": [
@@ -476,7 +484,11 @@
       "away": "Cabo Verde",
       "time": "00:00",
       "datetime": "2026-06-22T00:00",
-      "group": "Grupo H"
+      "group": "Grupo H",
+      "result": {
+        "home": 2,
+        "away": 2
+      }
     },
     {
       "id": "m537366",
@@ -484,7 +496,11 @@
       "away": "Egipto",
       "time": "03:00",
       "datetime": "2026-06-22T03:00",
-      "group": "Grupo G"
+      "group": "Grupo G",
+      "result": {
+        "home": 1,
+        "away": 3
+      }
     },
     {
       "id": "m537399",
@@ -511,6 +527,40 @@
       "time": "02:00",
       "datetime": "2026-06-23T02:00",
       "group": "Grupo I"
+    },
+    {
+      "id": "m537400",
+      "home": "Jordania",
+      "away": "Argelia",
+      "time": "05:00",
+      "datetime": "2026-06-23T05:00",
+      "group": "Grupo J"
+    },
+    {
+      "id": "m537405",
+      "home": "Portugal",
+      "away": "Uzbekistán",
+      "time": "19:00",
+      "datetime": "2026-06-23T19:00",
+      "group": "Grupo K"
+    },
+    {
+      "id": "m537411",
+      "home": "Inglaterra",
+      "away": "Ghana",
+      "time": "22:00",
+      "datetime": "2026-06-23T22:00",
+      "group": "Grupo L"
+    }
+  ],
+  "2026-06-24": [
+    {
+      "id": "m537412",
+      "home": "Panamá",
+      "away": "Croacia",
+      "time": "01:00",
+      "datetime": "2026-06-24T01:00",
+      "group": "Grupo L"
     }
   ]
 }
