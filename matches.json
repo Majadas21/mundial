@@ -682,7 +682,11 @@
       "away": "Alemania",
       "time": "22:00",
       "datetime": "2026-06-25T22:00",
-      "group": "Grupo E"
+      "group": "Grupo E",
+      "result": {
+        "home": 2,
+        "away": 1
+      }
     },
     {
       "id": "m537356",
@@ -690,7 +694,11 @@
       "away": "Costa de Marfil",
       "time": "22:00",
       "datetime": "2026-06-25T22:00",
-      "group": "Grupo E"
+      "group": "Grupo E",
+      "result": {
+        "home": 0,
+        "away": 2
+      }
     }
   ],
   "2026-06-26": [
@@ -700,7 +708,11 @@
       "away": "Países Bajos",
       "time": "01:00",
       "datetime": "2026-06-26T01:00",
-      "group": "Grupo F"
+      "group": "Grupo F",
+      "result": {
+        "home": 1,
+        "away": 3
+      }
     },
     {
       "id": "m537362",
@@ -708,7 +720,11 @@
       "away": "Suecia",
       "time": "01:00",
       "datetime": "2026-06-26T01:00",
-      "group": "Grupo F"
+      "group": "Grupo F",
+      "result": {
+        "home": 1,
+        "away": 1
+      }
     },
     {
       "id": "m537349",
@@ -716,7 +732,11 @@
       "away": "Estados Unidos",
       "time": "04:00",
       "datetime": "2026-06-26T04:00",
-      "group": "Grupo D"
+      "group": "Grupo D",
+      "result": {
+        "home": 3,
+        "away": 2
+      }
     },
     {
       "id": "m537350",
@@ -724,7 +744,11 @@
       "away": "Australia",
       "time": "04:00",
       "datetime": "2026-06-26T04:00",
-      "group": "Grupo D"
+      "group": "Grupo D",
+      "result": {
+        "home": 0,
+        "away": 0
+      }
     },
     {
       "id": "m537395",
@@ -759,6 +783,56 @@
       "time": "02:00",
       "datetime": "2026-06-27T02:00",
       "group": "Grupo H"
+    },
+    {
+      "id": "m537367",
+      "home": "Nueva Zelanda",
+      "away": "Bélgica",
+      "time": "05:00",
+      "datetime": "2026-06-27T05:00",
+      "group": "Grupo G"
+    },
+    {
+      "id": "m537368",
+      "home": "Egipto",
+      "away": "Irán",
+      "time": "05:00",
+      "datetime": "2026-06-27T05:00",
+      "group": "Grupo G"
+    },
+    {
+      "id": "m537413",
+      "home": "Panamá",
+      "away": "Inglaterra",
+      "time": "23:00",
+      "datetime": "2026-06-27T23:00",
+      "group": "Grupo L"
+    },
+    {
+      "id": "m537414",
+      "home": "Croacia",
+      "away": "Ghana",
+      "time": "23:00",
+      "datetime": "2026-06-27T23:00",
+      "group": "Grupo L"
+    }
+  ],
+  "2026-06-28": [
+    {
+      "id": "m537407",
+      "home": "Colombia",
+      "away": "Portugal",
+      "time": "01:30",
+      "datetime": "2026-06-28T01:30",
+      "group": "Grupo K"
+    },
+    {
+      "id": "m537408",
+      "home": "RD Congo",
+      "away": "Uzbekistán",
+      "time": "01:30",
+      "datetime": "2026-06-28T01:30",
+      "group": "Grupo K"
     }
   ]
 }
