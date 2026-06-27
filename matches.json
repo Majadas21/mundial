@@ -756,7 +756,11 @@
       "away": "Francia",
       "time": "21:00",
       "datetime": "2026-06-26T21:00",
-      "group": "Grupo I"
+      "group": "Grupo I",
+      "result": {
+        "home": 1,
+        "away": 4
+      }
     },
     {
       "id": "m537396",
@@ -764,7 +768,11 @@
       "away": "Irak",
       "time": "21:00",
       "datetime": "2026-06-26T21:00",
-      "group": "Grupo I"
+      "group": "Grupo I",
+      "result": {
+        "home": 5,
+        "away": 0
+      }
     }
   ],
   "2026-06-27": [
@@ -774,7 +782,11 @@
       "away": "España",
       "time": "02:00",
       "datetime": "2026-06-27T02:00",
-      "group": "Grupo H"
+      "group": "Grupo H",
+      "result": {
+        "home": 0,
+        "away": 1
+      }
     },
     {
       "id": "m537374",
@@ -782,7 +794,11 @@
       "away": "Arabia Saudí",
       "time": "02:00",
       "datetime": "2026-06-27T02:00",
-      "group": "Grupo H"
+      "group": "Grupo H",
+      "result": {
+        "home": 0,
+        "away": 0
+      }
     },
     {
       "id": "m537367",
@@ -790,7 +806,11 @@
       "away": "Bélgica",
       "time": "05:00",
       "datetime": "2026-06-27T05:00",
-      "group": "Grupo G"
+      "group": "Grupo G",
+      "result": {
+        "home": 1,
+        "away": 5
+      }
     },
     {
       "id": "m537368",
@@ -798,7 +818,11 @@
       "away": "Irán",
       "time": "05:00",
       "datetime": "2026-06-27T05:00",
-      "group": "Grupo G"
+      "group": "Grupo G",
+      "result": {
+        "home": 1,
+        "away": 1
+      }
     },
     {
       "id": "m537413",
@@ -833,6 +857,30 @@
       "time": "01:30",
       "datetime": "2026-06-28T01:30",
       "group": "Grupo K"
+    },
+    {
+      "id": "m537401",
+      "home": "Jordania",
+      "away": "Argentina",
+      "time": "04:00",
+      "datetime": "2026-06-28T04:00",
+      "group": "Grupo J"
+    },
+    {
+      "id": "m537402",
+      "home": "Argelia",
+      "away": "Austria",
+      "time": "04:00",
+      "datetime": "2026-06-28T04:00",
+      "group": "Grupo J"
+    },
+    {
+      "id": "m537417",
+      "home": "Sudáfrica",
+      "away": "Canadá",
+      "time": "21:00",
+      "datetime": "2026-06-28T21:00",
+      "group": "Last 32"
     }
   ]
 }
