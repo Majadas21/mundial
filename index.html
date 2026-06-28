@@ -1101,7 +1101,9 @@ init();
 //            → Web Push certificates → Generate key pair
 const VAPID_KEY = 'BFhlr3ufvNCE8weQjcdeJR_OjLMA-9figaX5tcKGZ19EaC3Sp11TDMSvgORAD9U8x16e8JBh9NLrSbft2f99P9o';
 
-const messaging = getMessaging(app);
+function getMessagingInstance() {
+  try { return getMessaging(app); } catch { return null; }
+}
 
 window.toggleNotifications = async function toggleNotifications() {
   const btn = document.getElementById('notifBtn');
@@ -1120,6 +1122,8 @@ window.toggleNotifications = async function toggleNotifications() {
 
 async function registerPushToken() {
   try {
+    const messaging = getMessagingInstance();
+    if (!messaging) { showToast('Notificaciones no disponibles en este navegador', true); return; }
     const swReg = await navigator.serviceWorker.register('./sw.js');
     const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
     if (!token) return;
