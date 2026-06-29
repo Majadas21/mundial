@@ -116,6 +116,12 @@ def fetch_chunk(date_from: str, date_to: str) -> dict:
             ft = m["score"]["fullTime"]
             if ft.get("home") is not None and ft.get("away") is not None:
                 match["result"] = {"home": ft["home"], "away": ft["away"]}
+            # Ganador real (necesario en eliminatorias con prórroga/penaltis)
+            winner_raw = m.get("score", {}).get("winner")
+            if winner_raw == "HOME_TEAM":
+                match["winner"] = "home"
+            elif winner_raw == "AWAY_TEAM":
+                match["winner"] = "away"
         days.setdefault(day_key, []).append(match)
     return days
 

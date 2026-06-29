@@ -306,24 +306,22 @@ header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
 .group-legend .dot { width: 10px; height: 10px; border-radius: 3px; background: #bbf7d0; flex-shrink: 0; }
 
 /* ── Eliminatorias ── */
-.bracket-wrap { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; padding: 1rem 0.5rem 1.5rem; }
+.bracket-wrap { overflow-x: auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 1rem 0.5rem 1.5rem; }
 .bracket-inner { display: flex; gap: 0; align-items: flex-start; min-width: max-content; }
-.bracket-round { display: flex; flex-direction: column; align-items: stretch; min-width: 170px; max-width: 200px; }
-.bracket-round-title { text-align: center; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 0 0.5rem 0.6rem; white-space: nowrap; }
-.bracket-slots { display: flex; flex-direction: column; }
-.bracket-slot-pair { display: flex; flex-direction: column; justify-content: center; }
-.bracket-match { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 3px 4px; flex-shrink: 0; }
-.bracket-team { display: flex; align-items: center; gap: 6px; padding: 5px 8px; font-size: 0.78rem; font-weight: 500; border-bottom: 1px solid var(--border); }
+.bracket-round { display: flex; flex-direction: column; align-items: stretch; width: 168px; flex-shrink: 0; }
+.bracket-round-title { text-align: center; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 0 0.5rem 0.5rem; white-space: nowrap; }
+.bracket-slots { display: flex; flex-direction: column; position: relative; }
+.bracket-slot { display: flex; align-items: center; box-sizing: border-box; position: relative; }
+.bracket-slot::before { content:''; position:absolute; right:0; top:50%; width:8px; height:2px; background:var(--border); }
+.bracket-round:last-child .bracket-slot::before { display:none; }
+.bracket-match { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 0 8px 0 4px; flex: 1; }
+.bracket-team { display: flex; align-items: center; gap: 5px; padding: 5px 7px; font-size: 0.75rem; font-weight: 500; border-bottom: 1px solid var(--border); min-height: 28px; }
 .bracket-team:last-child { border-bottom: none; }
 .bracket-team.winner { background: #f0fdf4; font-weight: 700; }
-.bracket-team .flag-img { height: 16px; width: 24px; object-fit: cover; border-radius: 2px; flex-shrink: 0; }
+.bracket-team .flag-img { height: 14px; width: 21px; object-fit: cover; border-radius: 2px; flex-shrink: 0; }
 .bracket-team-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bracket-team-score { font-weight: 700; font-size: 0.85rem; color: var(--navy); min-width: 14px; text-align: right; }
-.bracket-connector { display: flex; flex-direction: column; width: 16px; flex-shrink: 0; }
-.bracket-connector-line { flex: 1; border-right: 2px solid var(--border); }
-.bracket-connector-line:first-child { border-bottom: 2px solid var(--border); }
-.bracket-connector-line:last-child { border-top: 2px solid var(--border); }
-.bracket-tbd { color: var(--muted); font-style: italic; }
+.bracket-team-score { font-weight: 700; font-size: 0.82rem; color: var(--navy); min-width: 14px; text-align: right; }
+.bracket-tbd { color: var(--muted); font-style: italic; font-size: 0.7rem; }
 .bracket-empty { display: flex; align-items: center; justify-content: center; padding: 3rem 1rem; color: var(--muted); font-size: 0.9rem; }
 
 /* ── Modal ── */
@@ -741,70 +739,115 @@ function renderAll() {
 }
 
 // ── Cuadro eliminatorio ───────────────────────────────────────────────────
-const KNOCKOUT_STAGES = [
-  { key: 'Last 32',      label: 'Dieciseisavos' },
-  { key: 'Last 16',      label: 'Octavos' },
-  { key: 'Quarter Finals', label: 'Cuartos' },
-  { key: 'Semi Finals',  label: 'Semifinales' },
-  { key: 'Third Place',  label: '3er y 4º puesto' },
-  { key: 'Final',        label: 'Final' },
+// Cuadro fijo del Mundial 2026 — 16 partidos en orden de bracket
+// Índice 0-7 = lado izquierdo, 8-15 = lado derecho
+// Pares adyacentes se enfrentan en la siguiente ronda: (0,1)→oct0, (2,3)→oct1 …
+const R32_BRACKET = [
+  ['Alemania','Paraguay'],          // 0
+  ['Francia','Suecia'],             // 1
+  ['Sudáfrica','Canadá'],           // 2
+  ['Países Bajos','Marruecos'],     // 3
+  ['Portugal','Croacia'],           // 4
+  ['España','Austria'],             // 5
+  ['Estados Unidos','Bosnia y Herzegovina'], // 6
+  ['Bélgica','Senegal'],            // 7
+  ['Brasil','Japón'],               // 8
+  ['Costa de Marfil','Noruega'],    // 9
+  ['México','Ecuador'],             // 10
+  ['Inglaterra','RD Congo'],        // 11
+  ['Argentina','Cabo Verde'],       // 12
+  ['Australia','Egipto'],           // 13
+  ['Suiza','Argelia'],              // 14
+  ['Colombia','Ghana'],             // 15
 ];
+const ROUND_LABELS = ['Dieciseisavos','Octavos','Cuartos','Semifinales','Final'];
 
 function renderKnockout() {
   const el = document.getElementById('section-knockout');
   const allMatches = Object.values(allDays).flatMap(d => d.matches || []);
 
-  // Agrupar por ronda, excluyendo fase de grupos
-  const byStage = {};
-  allMatches.forEach(m => {
-    const g = m.group;
-    if (!g || g.startsWith('Grupo ')) return;
-    if (!byStage[g]) byStage[g] = [];
-    byStage[g].push(m);
-  });
-
-  const stagesPresent = KNOCKOUT_STAGES.filter(s => byStage[s.key]);
-  if (!stagesPresent.length) {
-    el.innerHTML = '<div class="bracket-empty">⚔️ El cuadro eliminatorio aún no está disponible</div>';
-    return;
+  // Encuentra el partido real en matches.json que corresponde a dos equipos
+  function findMatch(a, b) {
+    if (!a || !b) return null;
+    return allMatches.find(m =>
+      (m.home === a && m.away === b) || (m.home === b && m.away === a)
+    ) || null;
   }
 
-  // Calcular altura de slot para alineación visual (basada en 1ª ronda)
-  const firstStageMatches = byStage[stagesPresent[0].key] || [];
-  // Por cada ronda, ordenar por datetime/id
-  stagesPresent.forEach(s => {
-    byStage[s.key].sort((a, b) => (a.datetime || a.id) < (b.datetime || b.id) ? -1 : 1);
-  });
+  // Ganador real: usa campo 'winner' para ET/penaltis, resultado para tiempo reglamentario
+  function getWinner(slot) {
+    if (!slot || !slot.match) return null;
+    const m = slot.match;
+    if (m.winner === 'home') return m.home;
+    if (m.winner === 'away') return m.away;
+    if (m.result) {
+      if (m.result.home > m.result.away) return m.home;
+      if (m.result.away > m.result.home) return m.away;
+    }
+    return null;
+  }
 
-  function teamRow(name, score, isWinner) {
+  // Construir rondas a partir del bracket hardcodeado
+  // round[0] = 16 slots de R32, round[1] = 8 octavos … round[4] = final
+  const rounds = [];
+  const r0 = R32_BRACKET.map(([home, away]) => {
+    const match = findMatch(home, away);
+    return { home: match ? match.home : home, away: match ? match.away : away, match };
+  });
+  rounds.push(r0);
+
+  let prev = r0;
+  while (prev.length > 1) {
+    const next = [];
+    for (let i = 0; i < prev.length; i += 2) {
+      const w1 = getWinner(prev[i]);
+      const w2 = getWinner(prev[i + 1]);
+      const match = (w1 && w2) ? findMatch(w1, w2) : null;
+      next.push({ home: w1, away: w2, match });
+    }
+    rounds.push(next);
+    prev = next;
+  }
+
+  // Renderizar
+  function teamRow(name, score, win) {
     const flag = name ? getFlag(name) : '';
-    const nameHtml = name
+    const nm = name
       ? `<span class="bracket-team-name">${name}</span>`
       : `<span class="bracket-team-name bracket-tbd">Por determinar</span>`;
-    const scoreHtml = score != null ? `<span class="bracket-team-score">${score}</span>` : '';
-    return `<div class="bracket-team${isWinner ? ' winner' : ''}">${flag}${nameHtml}${scoreHtml}</div>`;
+    const sc = score != null ? `<span class="bracket-team-score">${score}</span>` : '';
+    return `<div class="bracket-team${win ? ' winner' : ''}">${flag}${nm}${sc}</div>`;
   }
 
-  function matchCard(m) {
-    const result = m.result;
-    const homeWin = result && result.home > result.away;
-    const awayWin = result && result.away > result.home;
+  function slotCard(slot) {
+    const r = slot.match?.result;
+    const w = getWinner(slot);
+    const homeWin = w === slot.home;
+    const awayWin = w === slot.away;
     return `<div class="bracket-match">
-      ${teamRow(m.home, result ? result.home : null, homeWin)}
-      ${teamRow(m.away, result ? result.away : null, awayWin)}
+      ${teamRow(slot.home, r ? r.home : null, homeWin)}
+      ${teamRow(slot.away, r ? r.away : null, awayWin)}
     </div>`;
   }
 
-  const rounds = stagesPresent.map(s => {
-    const matches = byStage[s.key];
-    const slots = matches.map(m => `<div class="bracket-slot-pair">${matchCard(m)}</div>`).join('');
+  // Altura de slot base: cada partdo R32 ocupa 1 unidad; rondas posteriores 2x, 4x…
+  const SLOT_H = 72; // px por partido en R32
+  const totalH = 16 * SLOT_H;
+
+  const cols = rounds.map((slots, ri) => {
+    const slotH = totalH / slots.length;
+    const matchH = 56; // altura real del card
+    const padV = (slotH - matchH) / 2;
+    const items = slots.map(slot =>
+      `<div class="bracket-slot" style="height:${slotH}px;padding:${padV}px 0">${slotCard(slot)}</div>`
+    ).join('');
     return `<div class="bracket-round">
-      <div class="bracket-round-title">${s.label}</div>
-      <div class="bracket-slots">${slots}</div>
+      <div class="bracket-round-title">${ROUND_LABELS[ri] || ''}</div>
+      <div class="bracket-slots" style="height:${totalH}px">${items}</div>
     </div>`;
   });
 
-  el.innerHTML = `<div class="bracket-wrap"><div class="bracket-inner">${rounds.join('')}</div></div>`;
+  el.innerHTML = `<div class="bracket-wrap"><div class="bracket-inner">${cols.join('')}</div></div>`;
 }
 
 // ── Clasificación de grupos ───────────────────────────────────────────────
