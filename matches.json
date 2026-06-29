@@ -904,7 +904,11 @@
       "away": "Canadá",
       "time": "21:00",
       "datetime": "2026-06-28T21:00",
-      "group": "Last 32"
+      "group": "Last 32",
+      "result": {
+        "home": 0,
+        "away": 1
+      }
     }
   ],
   "2026-06-29": [
@@ -922,6 +926,32 @@
       "away": "Paraguay",
       "time": "22:30",
       "datetime": "2026-06-29T22:30",
+      "group": "Last 32"
+    }
+  ],
+  "2026-06-30": [
+    {
+      "id": "m537418",
+      "home": "Países Bajos",
+      "away": "Marruecos",
+      "time": "03:00",
+      "datetime": "2026-06-30T03:00",
+      "group": "Last 32"
+    },
+    {
+      "id": "m537424",
+      "home": "Costa de Marfil",
+      "away": "Noruega",
+      "time": "19:00",
+      "datetime": "2026-06-30T19:00",
+      "group": "Last 32"
+    },
+    {
+      "id": "m537416",
+      "home": "Francia",
+      "away": "Suecia",
+      "time": "23:00",
+      "datetime": "2026-06-30T23:00",
       "group": "Last 32"
     }
   ]
