@@ -10,7 +10,8 @@
       "result": {
         "home": 2,
         "away": 0
-      }
+      },
+      "winner": "home"
     }
   ],
   "2026-06-12": [
@@ -24,7 +25,8 @@
       "result": {
         "home": 2,
         "away": 1
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537333",
@@ -50,7 +52,8 @@
       "result": {
         "home": 4,
         "away": 1
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537334",
@@ -88,7 +91,8 @@
       "result": {
         "home": 0,
         "away": 1
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537346",
@@ -100,7 +104,8 @@
       "result": {
         "home": 2,
         "away": 0
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537351",
@@ -112,7 +117,8 @@
       "result": {
         "home": 7,
         "away": 1
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537357",
@@ -138,7 +144,8 @@
       "result": {
         "home": 1,
         "away": 0
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537358",
@@ -150,7 +157,8 @@
       "result": {
         "home": 5,
         "away": 1
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537369",
@@ -212,7 +220,8 @@
       "result": {
         "home": 3,
         "away": 1
-      }
+      },
+      "winner": "home"
     }
   ],
   "2026-06-17": [
@@ -226,7 +235,8 @@
       "result": {
         "home": 1,
         "away": 4
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537397",
@@ -238,7 +248,8 @@
       "result": {
         "home": 3,
         "away": 0
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537398",
@@ -250,7 +261,8 @@
       "result": {
         "home": 3,
         "away": 1
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537403",
@@ -274,7 +286,8 @@
       "result": {
         "home": 4,
         "away": 2
-      }
+      },
+      "winner": "home"
     }
   ],
   "2026-06-18": [
@@ -288,7 +301,8 @@
       "result": {
         "home": 1,
         "away": 0
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537404",
@@ -300,7 +314,8 @@
       "result": {
         "home": 1,
         "away": 3
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537329",
@@ -324,7 +339,8 @@
       "result": {
         "home": 4,
         "away": 1
-      }
+      },
+      "winner": "home"
     }
   ],
   "2026-06-19": [
@@ -338,7 +354,8 @@
       "result": {
         "home": 6,
         "away": 0
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537330",
@@ -350,7 +367,8 @@
       "result": {
         "home": 1,
         "away": 0
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537348",
@@ -362,7 +380,8 @@
       "result": {
         "home": 2,
         "away": 0
-      }
+      },
+      "winner": "home"
     }
   ],
   "2026-06-20": [
@@ -376,7 +395,8 @@
       "result": {
         "home": 0,
         "away": 1
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537341",
@@ -388,7 +408,8 @@
       "result": {
         "home": 3,
         "away": 0
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537347",
@@ -400,7 +421,8 @@
       "result": {
         "home": 0,
         "away": 1
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537359",
@@ -412,7 +434,8 @@
       "result": {
         "home": 5,
         "away": 1
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537353",
@@ -424,7 +447,8 @@
       "result": {
         "home": 2,
         "away": 1
-      }
+      },
+      "winner": "home"
     }
   ],
   "2026-06-21": [
@@ -450,7 +474,8 @@
       "result": {
         "home": 0,
         "away": 4
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537371",
@@ -462,7 +487,8 @@
       "result": {
         "home": 4,
         "away": 0
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537365",
@@ -500,7 +526,8 @@
       "result": {
         "home": 1,
         "away": 3
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537399",
@@ -512,7 +539,8 @@
       "result": {
         "home": 2,
         "away": 0
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537393",
@@ -524,7 +552,8 @@
       "result": {
         "home": 3,
         "away": 0
-      }
+      },
+      "winner": "home"
     }
   ],
   "2026-06-23": [
@@ -538,7 +567,8 @@
       "result": {
         "home": 3,
         "away": 2
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537400",
@@ -550,7 +580,8 @@
       "result": {
         "home": 1,
         "away": 2
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537405",
@@ -562,7 +593,8 @@
       "result": {
         "home": 5,
         "away": 0
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537411",
@@ -588,7 +620,8 @@
       "result": {
         "home": 0,
         "away": 1
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537406",
@@ -600,7 +633,8 @@
       "result": {
         "home": 1,
         "away": 0
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537337",
@@ -612,7 +646,8 @@
       "result": {
         "home": 2,
         "away": 1
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537338",
@@ -624,7 +659,8 @@
       "result": {
         "home": 3,
         "away": 1
-      }
+      },
+      "winner": "home"
     }
   ],
   "2026-06-25": [
@@ -638,7 +674,8 @@
       "result": {
         "home": 4,
         "away": 2
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537343",
@@ -650,7 +687,8 @@
       "result": {
         "home": 0,
         "away": 3
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537331",
@@ -662,7 +700,8 @@
       "result": {
         "home": 0,
         "away": 3
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537332",
@@ -674,7 +713,8 @@
       "result": {
         "home": 1,
         "away": 0
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537355",
@@ -686,7 +726,8 @@
       "result": {
         "home": 2,
         "away": 1
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537356",
@@ -698,7 +739,8 @@
       "result": {
         "home": 0,
         "away": 2
-      }
+      },
+      "winner": "away"
     }
   ],
   "2026-06-26": [
@@ -712,7 +754,8 @@
       "result": {
         "home": 1,
         "away": 3
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537362",
@@ -736,7 +779,8 @@
       "result": {
         "home": 3,
         "away": 2
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537350",
@@ -760,7 +804,8 @@
       "result": {
         "home": 1,
         "away": 4
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537396",
@@ -772,7 +817,8 @@
       "result": {
         "home": 5,
         "away": 0
-      }
+      },
+      "winner": "home"
     }
   ],
   "2026-06-27": [
@@ -786,7 +832,8 @@
       "result": {
         "home": 0,
         "away": 1
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537374",
@@ -810,7 +857,8 @@
       "result": {
         "home": 1,
         "away": 5
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537368",
@@ -834,7 +882,8 @@
       "result": {
         "home": 0,
         "away": 2
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537414",
@@ -846,7 +895,8 @@
       "result": {
         "home": 2,
         "away": 1
-      }
+      },
+      "winner": "home"
     }
   ],
   "2026-06-28": [
@@ -872,7 +922,8 @@
       "result": {
         "home": 3,
         "away": 1
-      }
+      },
+      "winner": "home"
     },
     {
       "id": "m537401",
@@ -884,7 +935,8 @@
       "result": {
         "home": 1,
         "away": 3
-      }
+      },
+      "winner": "away"
     },
     {
       "id": "m537402",
@@ -908,7 +960,8 @@
       "result": {
         "home": 0,
         "away": 1
-      }
+      },
+      "winner": "away"
     }
   ],
   "2026-06-29": [
@@ -933,8 +986,8 @@
       "datetime": "2026-06-29T22:30",
       "group": "Last 32",
       "result": {
-        "home": 4,
-        "away": 5
+        "home": 1,
+        "away": 1
       },
       "winner": "away"
     }
@@ -948,8 +1001,8 @@
       "datetime": "2026-06-30T03:00",
       "group": "Last 32",
       "result": {
-        "home": 3,
-        "away": 4
+        "home": 1,
+        "away": 1
       },
       "winner": "away"
     },
