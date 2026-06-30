@@ -322,6 +322,7 @@ header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
 .bracket-team-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bracket-team-score { font-weight: 700; font-size: 0.82rem; color: var(--navy); min-width: 14px; text-align: right; }
 .bracket-tbd { color: var(--muted); font-style: italic; font-size: 0.7rem; }
+.bracket-extra { text-align: center; font-size: 0.62rem; color: var(--muted); padding: 2px 4px 3px; background: var(--surface); border-top: 1px solid var(--border); }
 .bracket-empty { display: flex; align-items: center; justify-content: center; padding: 3rem 1rem; color: var(--muted); font-size: 0.9rem; }
 
 /* ── Modal ── */
@@ -821,12 +822,22 @@ function renderKnockout() {
 
   function slotCard(slot) {
     const r = slot.match?.result;
+    const m = slot.match;
     const w = getWinner(slot);
     const homeWin = w === slot.home;
     const awayWin = w === slot.away;
+    let extraLabel = '';
+    if (m) {
+      if (m.penalties) {
+        extraLabel = `<div class="bracket-extra">pen. ${m.penalties.home}–${m.penalties.away}</div>`;
+      } else if (m.aet && r && (m.aet.home !== r.home || m.aet.away !== r.away)) {
+        extraLabel = `<div class="bracket-extra">AET ${m.aet.home}–${m.aet.away}</div>`;
+      }
+    }
     return `<div class="bracket-match">
       ${teamRow(slot.home, r ? r.home : null, homeWin)}
       ${teamRow(slot.away, r ? r.away : null, awayWin)}
+      ${extraLabel}
     </div>`;
   }
 
