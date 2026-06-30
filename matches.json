@@ -989,6 +989,14 @@
         "home": 1,
         "away": 1
       },
+      "aet": {
+        "home": 4,
+        "away": 5
+      },
+      "penalties": {
+        "home": 3,
+        "away": 4
+      },
       "winner": "away"
     }
   ],
@@ -1003,6 +1011,14 @@
       "result": {
         "home": 1,
         "away": 1
+      },
+      "aet": {
+        "home": 3,
+        "away": 4
+      },
+      "penalties": {
+        "home": 2,
+        "away": 3
       },
       "winner": "away"
     },
