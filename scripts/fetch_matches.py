@@ -112,16 +112,38 @@ def fetch_chunk(date_from: str, date_to: str) -> dict:
             "datetime": kick_madrid.strftime("%Y-%m-%dT%H:%M"),
             "group": format_group(m.get("group") or m.get("stage") or ""),
         }
-        if m.get("status") == "FINISHED" and m.get("score", {}).get("fullTime"):
-            ft = m["score"]["fullTime"]
-            if ft.get("home") is not None and ft.get("away") is not None:
-                match["result"] = {"home": ft["home"], "away": ft["away"]}
-            # Ganador real (necesario en eliminatorias con prórroga/penaltis)
-            winner_raw = m.get("score", {}).get("winner")
-            if winner_raw == "HOME_TEAM":
-                match["winner"] = "home"
-            elif winner_raw == "AWAY_TEAM":
-                match["winner"] = "away"
+        if m.get("status") == "FINISHED":
+            score_obj = m.get("score", {})
+            ft  = score_obj.get("fullTime") or {}
+            rt  = score_obj.get("regularTime") or {}   # solo 90 min (existe en ET/pen)
+            et  = score_obj.get("extraTime") or {}     # goles solo del tiempo extra
+
+            def _v(obj, key):
+                # La API v4 usa "home"/"away"; versiones antiguas "homeTeam"/"awayTeam"
+                v = obj.get(key)
+                return v if v is not None else obj.get(key + "Team")
+
+            ft_h, ft_a = _v(ft, "home"), _v(ft, "away")
+            if ft_h is not None:
+                rt_h, rt_a = _v(rt, "home"), _v(rt, "away")
+                et_h, et_a = _v(et, "home"), _v(et, "away")
+
+                if rt_h is not None:
+                    # Partido con ET o penaltis: regularTime = resultado exacto de 90 min
+                    match["result"] = {"home": rt_h, "away": rt_a}
+                elif et_h is not None:
+                    # Alternativa: restar goles de ET a fullTime
+                    match["result"] = {"home": ft_h - et_h, "away": ft_a - et_a}
+                else:
+                    # Partido de tiempo reglamentario: fullTime = resultado de 90 min
+                    match["result"] = {"home": ft_h, "away": ft_a}
+
+                # Ganador real para el cuadro eliminatorio (válido con ET y penaltis)
+                winner_raw = score_obj.get("winner")
+                if winner_raw == "HOME_TEAM":
+                    match["winner"] = "home"
+                elif winner_raw == "AWAY_TEAM":
+                    match["winner"] = "away"
         days.setdefault(day_key, []).append(match)
     return days
 
