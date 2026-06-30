@@ -918,7 +918,12 @@
       "away": "Japón",
       "time": "19:00",
       "datetime": "2026-06-29T19:00",
-      "group": "Last 32"
+      "group": "Last 32",
+      "result": {
+        "home": 2,
+        "away": 1
+      },
+      "winner": "home"
     },
     {
       "id": "m537415",
@@ -926,7 +931,12 @@
       "away": "Paraguay",
       "time": "22:30",
       "datetime": "2026-06-29T22:30",
-      "group": "Last 32"
+      "group": "Last 32",
+      "result": {
+        "home": 4,
+        "away": 5
+      },
+      "winner": "away"
     }
   ],
   "2026-06-30": [
@@ -936,7 +946,12 @@
       "away": "Marruecos",
       "time": "03:00",
       "datetime": "2026-06-30T03:00",
-      "group": "Last 32"
+      "group": "Last 32",
+      "result": {
+        "home": 3,
+        "away": 4
+      },
+      "winner": "away"
     },
     {
       "id": "m537424",
@@ -952,6 +967,42 @@
       "away": "Suecia",
       "time": "23:00",
       "datetime": "2026-06-30T23:00",
+      "group": "Last 32"
+    }
+  ],
+  "2026-07-01": [
+    {
+      "id": "m537425",
+      "home": "México",
+      "away": "Ecuador",
+      "time": "03:00",
+      "datetime": "2026-07-01T03:00",
+      "group": "Last 32"
+    },
+    {
+      "id": "m537426",
+      "home": "Inglaterra",
+      "away": "RD Congo",
+      "time": "18:00",
+      "datetime": "2026-07-01T18:00",
+      "group": "Last 32"
+    },
+    {
+      "id": "m537422",
+      "home": "Bélgica",
+      "away": "Senegal",
+      "time": "22:00",
+      "datetime": "2026-07-01T22:00",
+      "group": "Last 32"
+    }
+  ],
+  "2026-07-02": [
+    {
+      "id": "m537421",
+      "home": "Estados Unidos",
+      "away": "Bosnia y Herzegovina",
+      "time": "02:00",
+      "datetime": "2026-07-02T02:00",
       "group": "Last 32"
     }
   ]
