@@ -990,8 +990,8 @@
         "away": 1
       },
       "aet": {
-        "home": 4,
-        "away": 5
+        "home": 1,
+        "away": 1
       },
       "penalties": {
         "home": 3,
@@ -1013,8 +1013,8 @@
         "away": 1
       },
       "aet": {
-        "home": 3,
-        "away": 4
+        "home": 1,
+        "away": 1
       },
       "penalties": {
         "home": 2,
@@ -1028,7 +1028,12 @@
       "away": "Noruega",
       "time": "19:00",
       "datetime": "2026-06-30T19:00",
-      "group": "Last 32"
+      "group": "Last 32",
+      "result": {
+        "home": 1,
+        "away": 2
+      },
+      "winner": "away"
     },
     {
       "id": "m537416",
