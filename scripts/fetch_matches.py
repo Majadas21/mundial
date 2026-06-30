@@ -128,22 +128,25 @@ def fetch_chunk(date_from: str, date_to: str) -> dict:
                 rt_h, rt_a = _v(rt, "home"), _v(rt, "away")
                 et_h, et_a = _v(et, "home"), _v(et, "away")
 
+                # fullTime incluye los goles de los penaltis si los hubo (bug de la API)
+                pen = score_obj.get("penalties") or {}
+                pen_h, pen_a = _v(pen, "home"), _v(pen, "away")
+                ft_noPen_h = ft_h - pen_h if pen_h is not None else ft_h
+                ft_noPen_a = ft_a - pen_a if pen_a is not None else ft_a
+
                 if rt_h is not None:
                     # Partido con ET o penaltis: regularTime = resultado exacto de 90 min
                     match["result"] = {"home": rt_h, "away": rt_a}
-                    # fullTime = resultado tras ET (puede diferir de regularTime si hubo goles en ET)
-                    match["aet"] = {"home": ft_h, "away": ft_a}
+                    # Resultado tras la prórroga, sin penaltis (puede diferir de regularTime si hubo goles en ET)
+                    match["aet"] = {"home": ft_noPen_h, "away": ft_noPen_a}
                 elif et_h is not None:
                     # Alternativa: restar goles de ET a fullTime
-                    match["result"] = {"home": ft_h - et_h, "away": ft_a - et_a}
-                    match["aet"] = {"home": ft_h, "away": ft_a}
+                    match["result"] = {"home": ft_noPen_h - et_h, "away": ft_noPen_a - et_a}
+                    match["aet"] = {"home": ft_noPen_h, "away": ft_noPen_a}
                 else:
                     # Partido de tiempo reglamentario: fullTime = resultado de 90 min
                     match["result"] = {"home": ft_h, "away": ft_a}
 
-                # Resultado de penaltis si los hubo
-                pen = score_obj.get("penalties") or {}
-                pen_h, pen_a = _v(pen, "home"), _v(pen, "away")
                 if pen_h is not None:
                     match["penalties"] = {"home": pen_h, "away": pen_a}
 
